@@ -1,14 +1,16 @@
 import express from "express";
 import cors from "cors";
-import routes from "./routes";
+import inventoryRoutes from "./routes/inventoryRoutes";
 
 const app = express();
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use("/api", routes);
+// Base route
+app.get("/", (_req, res) => res.send("Inventory System API 🚀"));
+
+// Inventory routes
+app.use("/api/inventory", inventoryRoutes);
 
 export default app;
