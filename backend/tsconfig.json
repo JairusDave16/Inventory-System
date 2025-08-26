@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    // File Layout
+    "rootDir": "./src",        // where your TypeScript source files live
+    "outDir": "./dist",        // compiled JS output
+
+    // Environment Settings
+    "module": "commonjs",      // Express works fine with commonjs
+    "target": "es2020",        // modern but Node-friendly JS
+    "lib": ["es2020"],         // language features available
+    "types": ["node", "express"],
+
+    // Other Outputs
+    "sourceMap": true,         // helpful for debugging
+    "declaration": true,
+    "declarationMap": true,
+
+    // Stricter Typechecking Options
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    // Recommended Options
+    "strict": true,
+    "esModuleInterop": true,   // allows clean import of commonjs modules
+    "skipLibCheck": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}
