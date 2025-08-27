@@ -4,7 +4,11 @@ import inventoryRoutes from "./routes/inventoryRoutes";
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:3000", // allow your frontend
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+}));
 app.use(express.json());
 
 // Base route

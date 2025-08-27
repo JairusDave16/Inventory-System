@@ -26,13 +26,13 @@ function App() {
   }, []);
 
   const fetchItems = async () => {
-    const res = await axios.get("http://localhost:5000/api/inventory");
+    const res = await axios.get("http://localhost:8888/api/inventory");
     setItems(res.data);
   };
 
   const handleDelete = async (id: number) => {
     if (!window.confirm("Are you sure you want to delete this item?")) return;
-    await axios.delete(`http://localhost:5000/api/inventory/${id}`);
+    await axios.delete(`http://localhost:8888/api/inventory/${id}`);
     setItems(items.filter((item) => item.id !== id));
   };
 
@@ -43,14 +43,14 @@ function App() {
 
   const handleUpdate = async () => {
     if (!editingItem) return;
-    await axios.put(`http://localhost:5000/api/inventory/${editingItem.id}`, editingItem);
+    await axios.put(`http://localhost:8888/api/inventory/${editingItem.id}`, editingItem);
     setItems(items.map((it) => (it.id === editingItem.id ? editingItem : it)));
     setShowEditModal(false);
   };
 
   // ---------------- Add Item ----------------
   const handleAddItem = async () => {
-    const res = await axios.post("http://localhost:5000/api/inventory", newItem);
+    const res = await axios.post("http://localhost:8888/api/inventory", newItem);
     setItems([...items, res.data]);
     setNewItem({ name: "", category: "", quantity: 0, series: "" });
     setShowAddModal(false);
