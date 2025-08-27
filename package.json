@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "scripts": {
+    "dev": "concurrently \"cd backend && php artisan serve --port=8888\" \"cd frontend && npm start\""
+  }
+}
