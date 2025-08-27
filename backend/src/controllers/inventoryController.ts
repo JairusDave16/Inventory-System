@@ -12,8 +12,13 @@ export const getItemById = (req: Request, res: Response) => {
 };
 
 export const getItemsByCategory = (req: Request, res: Response) => {
-  res.json(InventoryService.getByCategory(req.params.category));
+  const category = req.params.category;
+  if (!category) {
+    return res.status(400).json({ message: "Category is required" });
+  }
+  res.json(InventoryService.getByCategory(category));
 };
+
 
 export const createItem = (req: Request, res: Response) => {
   const { name, category, quantity, series } = req.body;
