@@ -1,24 +1,26 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from "react";
+import InventoryList from "./components/InventoryList";
+import InventoryForm from "./components/InventoryForm";
+import { InventoryItem } from "./types/inventory";
+import api from "./api/axios";
 
 function App() {
+  const [items, setItems] = useState<InventoryItem[]>([]);
+
+  const fetchItems = async () => {
+    const { data } = await api.get<InventoryItem[]>("/inventory");
+    setItems(data);
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1>Inventory System</h1>
+      <InventoryForm onAdd={fetchItems} />
+      <InventoryList items={items} />
     </div>
   );
 }
