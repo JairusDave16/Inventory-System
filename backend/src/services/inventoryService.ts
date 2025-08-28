@@ -5,47 +5,72 @@ let currentId = 1;
 
 export class InventoryService {
   static getAll(): InventoryItem[] {
-    return inventory;
+    // return shallow copy so external code can’t mutate internal state
+    return [...inventory];
   }
 
-static getById(id: number): InventoryItem | null {
-  const item = inventory.find((item) => item.id === id);
-  return item !== undefined ? item : null;
-}
+  static getById(id: number): InventoryItem | null {
+    const item = inventory.find((item) => item.id === id);
+    // return a shallow copy if found
+    return item ? { ...item } : null;
+  }
 
   static getByCategory(category: string): InventoryItem[] {
-    return inventory.filter((item) => item.category === category);
+    return inventory
+      .filter((item) => item.category === category)
+      .map((item) => ({ ...item })); // return copies
   }
 
-  static create(data: Omit<InventoryItem, "id">): InventoryItem {
-    const newItem: InventoryItem = {
-      id: currentId++,
-      ...data,
-    };
-    inventory.push(newItem);
-    return newItem;
+ static create(data: Omit<InventoryItem, "id">): InventoryItem {
+  const quantity = data.quantity ?? 0; // default to 0 if undefined
+
+  if (quantity < 0) {
+    throw new Error("Quantity cannot be negative");
   }
+
+  const newItem: InventoryItem = {
+    id: currentId++,
+    ...data,
+    quantity, // override with ensured value
+  };
+
+  inventory.push(newItem);
+  return { ...newItem }; // return copy
+}
 
   static update(id: number, data: Partial<Omit<InventoryItem, "id">>): InventoryItem | null {
-    const index = inventory.findIndex((item) => item.id === id);
-    if (index === -1) return null;
+  const item = inventory.find((i) => i.id === id);
+  if (!item) return null;
 
-    const updated: InventoryItem = {
-      ...inventory[index], // keep old values
-      ...data,             // overwrite with new values
-      id,                  // ensure id always exists
-    };
-
-    inventory[index] = updated;
-    return updated;
+  if (data.name !== undefined) {
+    item.name = data.name;
   }
 
- static delete(id: number): InventoryItem | null {
+  if (data.quantity !== undefined) {
+    const newQuantity = data.quantity ?? 0; // default to 0
+    if (newQuantity < 0) {
+      throw new Error("Quantity cannot be negative");
+    }
+    item.quantity = newQuantity;
+  }
+
+  return { ...item }; // return a copy
+}
+
+  static delete(id: number): InventoryItem {
   const index = inventory.findIndex((item) => item.id === id);
-  if (index === -1) return null;
+  if (index === -1) {
+    throw new Error(`Item with id ${id} not found`);
+  }
 
   const [deleted] = inventory.splice(index, 1);
-  return deleted ?? null;
+
+  if (!deleted) {
+    throw new Error(`Unexpected error: failed to delete item with id ${id}`);
+  }
+
+  return { ...deleted }; // now guaranteed to be InventoryItem
 }
+
 
 }
