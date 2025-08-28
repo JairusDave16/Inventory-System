@@ -13,11 +13,11 @@ const router = Router();
 // GET all items
 router.get("/", getAllItems);
 
-// GET item by ID
-router.get("/:id", getItemById);
-
 // GET items by category
 router.get("/category/:category", getItemsByCategory);
+
+// GET item by ID
+router.get("/:id", getItemById);
 
 // POST new item
 router.post("/", createItem);

@@ -1,35 +1,51 @@
-import { InventoryItem } from "../models/inventoryItem";
+import { InventoryItem } from "../types/inventory";
 
-// In-memory store (replace with DB later)
 let inventory: InventoryItem[] = [];
+let currentId = 1;
 
-export const InventoryService = {
-  getAll: () => inventory,
+export class InventoryService {
+  static getAll(): InventoryItem[] {
+    return inventory;
+  }
 
-  getById: (id: number) => inventory.find(item => item.id === id),
+static getById(id: number): InventoryItem | null {
+  const item = inventory.find((item) => item.id === id);
+  return item !== undefined ? item : null;
+}
 
-  getByCategory: (category: string) =>
-    inventory.filter(item => item.category === category),
+  static getByCategory(category: string): InventoryItem[] {
+    return inventory.filter((item) => item.category === category);
+  }
 
-  create: (data: Omit<InventoryItem, "id">) => {
+  static create(data: Omit<InventoryItem, "id">): InventoryItem {
     const newItem: InventoryItem = {
-      id: inventory.length + 1,
+      id: currentId++,
       ...data,
     };
     inventory.push(newItem);
     return newItem;
-  },
+  }
 
-  update: (id: number, data: Partial<InventoryItem>) => {
-    const item = inventory.find(i => i.id === id);
-    if (!item) return null;
-    Object.assign(item, data);
-    return item;
-  },
-
-  delete: (id: number) => {
-    const index = inventory.findIndex(i => i.id === id);
+  static update(id: number, data: Partial<Omit<InventoryItem, "id">>): InventoryItem | null {
+    const index = inventory.findIndex((item) => item.id === id);
     if (index === -1) return null;
-    return inventory.splice(index, 1)[0];
-  },
-};
+
+    const updated: InventoryItem = {
+      ...inventory[index], // keep old values
+      ...data,             // overwrite with new values
+      id,                  // ensure id always exists
+    };
+
+    inventory[index] = updated;
+    return updated;
+  }
+
+ static delete(id: number): InventoryItem | null {
+  const index = inventory.findIndex((item) => item.id === id);
+  if (index === -1) return null;
+
+  const [deleted] = inventory.splice(index, 1);
+  return deleted ?? null;
+}
+
+}
