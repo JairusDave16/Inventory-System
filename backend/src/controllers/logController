@@ -1,0 +1,28 @@
+import { Request, Response } from "express";
+import { logService } from "../services/logService";
+
+export const logController = {
+  getLogsByItem(req: Request, res: Response) {
+    const itemId = parseInt(req.params.itemId, 10);
+    if (isNaN(itemId)) return res.status(400).json({ error: "Invalid itemId" });
+
+    const logs = logService.getLogsByItem(itemId);
+    res.json(logs);
+  },
+
+  addLog(req: Request, res: Response) {
+    const itemId = parseInt(req.params.itemId, 10);
+    const { action, amount } = req.body;
+
+    if (isNaN(itemId) || !["deposit", "withdraw"].includes(action) || typeof amount !== "number") {
+      return res.status(400).json({ error: "Invalid request" });
+    }
+
+    const newLog = logService.addLog(itemId, action, amount);
+    res.status(201).json(newLog);
+  },
+
+  getAllLogs(req: Request, res: Response) {
+    res.json(logService.getAllLogs());
+  },
+};

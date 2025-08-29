@@ -5,7 +5,9 @@ import {
   getItemsByCategory,
   createItem,
   updateItem,
-  deleteItem
+  deleteItem,
+  depositItem,
+  withdrawItem,
 } from "../controllers/inventoryController";
 
 const router = Router();
@@ -27,5 +29,12 @@ router.put("/:id", updateItem);
 
 // DELETE item
 router.delete("/:id", deleteItem);
+
+// POST deposit
+router.post("/:id/deposit", depositItem);
+
+// POST withdraw
+router.post("/:id/withdraw", withdrawItem);
+
 
 export default router;

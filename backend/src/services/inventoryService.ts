@@ -72,5 +72,36 @@ export class InventoryService {
   return { ...deleted }; // now guaranteed to be InventoryItem
 }
 
+static deposit(id: number, amount: number): InventoryItem {
+    if (amount <= 0) {
+      throw new Error("Deposit amount must be greater than zero");
+    }
+
+    const item = this.getById(id);
+    if (!item) throw new Error(`Item with id ${id} not found`);
+
+    item.quantity = (item.quantity ?? 0) + amount;
+
+    return { ...item }; // return copy
+  }
+
+  static withdraw(id: number, amount: number): InventoryItem {
+    if (amount <= 0) {
+      throw new Error("Withdraw amount must be greater than zero");
+    }
+
+    const item = this.getById(id);
+    if (!item) throw new Error(`Item with id ${id} not found`);
+
+    if ((item.quantity ?? 0) < amount) {
+      throw new Error(
+        `Not enough stock to withdraw. Available: ${item.quantity}, Requested: ${amount}`
+      );
+    }
+
+    item.quantity -= amount;
+
+    return { ...item }; // return copy
+  }
 
 }

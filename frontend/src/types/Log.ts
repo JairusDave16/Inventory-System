@@ -1,9 +1,8 @@
 // frontend/src/types/Log.ts
-
 export type Log = {
   id: number;
-  itemId: number;         // references which inventory item
+  itemId: number;
   action: "deposit" | "withdraw";
   amount: number;
-  createdAt: string;      // ISO string from backend
+  createdAt: string;
 };

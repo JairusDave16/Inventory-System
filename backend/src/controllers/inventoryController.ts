@@ -98,3 +98,38 @@ export const deleteItem = async (req: Request, res: Response) => {
     sendResponse(res, 500, false, error.message || "Failed to delete item");
   }
 };
+
+// DEPOSIT item
+export const depositItem = (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  const amount = Number(req.body.amount);
+
+  if (isNaN(id) || isNaN(amount)) {
+    return sendResponse(res, 400, false, "Invalid ID or amount");
+  }
+
+  try {
+    const updatedItem = InventoryService.deposit(id, amount);
+    sendResponse(res, 200, true, `Deposited ${amount} to item ${id}`, updatedItem);
+  } catch (err: any) {
+    sendResponse(res, 400, false, err.message);
+  }
+};
+
+// WITHDRAW item
+export const withdrawItem = (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  const amount = Number(req.body.amount);
+
+  if (isNaN(id) || isNaN(amount)) {
+    return sendResponse(res, 400, false, "Invalid ID or amount");
+  }
+
+  try {
+    const updatedItem = InventoryService.withdraw(id, amount);
+    sendResponse(res, 200, true, `Withdrew ${amount} from item ${id}`, updatedItem);
+  } catch (err: any) {
+    sendResponse(res, 400, false, err.message);
+  }
+};
+
