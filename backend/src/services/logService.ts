@@ -12,48 +12,48 @@ export const logService = {
 
   create: (
     itemId: string,
-    type: "deposit" | "withdraw",
+    type: "deposit" | "withdraw" | "update",
     quantity: number,
     notes?: string
-  ): Log => {
+): Log => {
     const item = itemService.getById(itemId);
-    if (!item) {
-      throw new Error("Item not found");
-    }
+    if (!item) throw new Error("Item not found");
 
-    if (type === "withdraw" && item.stock < quantity) {
-      throw new Error("Insufficient stock to withdraw");
+    if (type === "deposit") {
+        itemService.adjustStock(itemId, quantity, "deposit");
+    } else if (type === "withdraw") {
+        itemService.adjustStock(itemId, quantity, "withdraw");
     }
-
-    // Adjust stock (positive for deposit, negative for withdraw)
-    itemService.adjustStock(itemId, type === "deposit" ? quantity : -quantity);
 
     const log: Log = {
-      id: uuidv4(),
-      itemId,
-      type,
-      quantity,
-      notes: notes || "",
-      date: new Date(),
+        id: uuidv4(),
+        itemId,
+        type,
+        quantity,
+        notes: notes || "",
+        date: new Date(),
     };
 
     logs.push(log);
     return log;
-  },
-
-  delete: (id: string): boolean => {
-  const index = logs.findIndex(l => l.id === id);
-  if (index === -1) return false;
-
-  // Rollback stock when a log is deleted
-  const log = logs[index]!; // non-null assertion, safe because of check above
-  itemService.adjustStock(
-    log.itemId,
-    log.type === "deposit" ? -log.quantity : log.quantity
-  );
-
-  logs.splice(index, 1);
-  return true;
 },
+
+delete: (id: string): boolean => {
+    const index = logs.findIndex(l => l.id === id);
+    if (index === -1) return false;
+
+    const log = logs[index]!;
+
+    // Only rollback stock for deposit/withdraw logs
+    if (log.type === "deposit") {
+        itemService.adjustStock(log.itemId, -log.quantity, "deposit");
+    } else if (log.type === "withdraw") {
+        itemService.adjustStock(log.itemId, log.quantity, "withdraw");
+    }
+
+    logs.splice(index, 1);
+    return true;
+},
+
 
 };

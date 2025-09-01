@@ -1,8 +1,7 @@
-// src/models/Log.ts
 export interface Log {
   id: string;
   itemId: string;
-  type: "deposit" | "withdraw"; // instead of action
+  type: "deposit" | "withdraw" | "update"; // add "update"
   quantity: number;
   notes?: string;
   date: Date;
