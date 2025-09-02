@@ -1,79 +1,70 @@
-import { Item } from "../models/Item";
+// backend/src/services/itemService.ts
 import { v4 as uuidv4 } from "uuid";
-import { logService } from "./logService";
+import { Item } from "../types/Item";
+import { Log } from "../types/Log";
 
+// In-memory storage (replace later with DB or JSON persistence)
 let items: Item[] = [];
+let logs: Log[] = [];
 
-export const itemService = {
-  getAll: (): Item[] => items,
-
-  getById: (id: string): Item | undefined => items.find(i => i.id === id),
-
-  create: (data: Omit<Item, "id" | "stock">): Item => {
-    const newItem: Item = {
-      id: uuidv4(),
-      name: data.name,
-      description: data.description ?? "",
-      stock: 0,
-      ...(data.unit ? { unit: data.unit } : {}),
-      ...(data.category ? { category: data.category } : {}),
-    };
-    items.push(newItem);
-
-    // Log creation
-    logService.create(newItem.id, "deposit", 0, "Initial creation");
-
-    return newItem;
-  },
-
-  update: (id: string, data: Partial<Omit<Item, "id" | "stock">>): Item | null => {
-    const index = items.findIndex(i => i.id === id);
-    if (index === -1) return null;
-
-    const item = items[index]!; // non-null assertion
-
-    if (data.name !== undefined) item.name = data.name;
-    if (data.description !== undefined) item.description = data.description;
-    if (data.unit !== undefined) item.unit = data.unit;
-    if (data.category !== undefined) item.category = data.category;
-
-    items[index] = item;
-
-    // Log update
-    logService.create(item.id, "update", 0, "Item details updated");
-
-    return item;
-  },
-
-  adjustStock: (id: string, quantity: number, type: "deposit" | "withdraw"): Item | null => {
-    const item = items.find(i => i.id === id);
-    if (!item) return null;
-
-    if (type === "withdraw" && item.stock < quantity) {
-      throw new Error("Insufficient stock to withdraw");
-    }
-
-    item.stock += type === "deposit" ? quantity : -quantity;
-
-    // Log the stock change
-    logService.create(item.id, type, quantity);
-
-    return item;
-  },
-
-  delete: (id: string): boolean => {
-    const index = items.findIndex(i => i.id === id);
-    if (index === -1) return false;
-
-    const item = items[index]!;
-
-    // Rollback stock for all logs of this item (optional)
-    const itemLogs = logService.getByItem(item.id);
-    itemLogs.forEach(log => {
-      item.stock -= log.type === "deposit" ? log.quantity : -log.quantity;
-    });
-
-    items.splice(index, 1);
-    return true;
-  },
+// Utility: add a log entry
+function addLog(itemId: string, type: Log["type"], quantity: number, notes?: string): void {
+  const log: Log = {
+  id: uuidv4(),
+  itemId,
+  type,
+  quantity,
+  date: new Date().toISOString(),
+  ...(notes ? { notes } : {}), // ✅ only include notes if provided
 };
+  logs.push(log);
+}
+
+// Get all items
+export function getItems(): Item[] {
+  return items;
+}
+
+// Add a new item
+export function addItem(item: Item): Item {
+  items.push(item);
+  addLog(item.id, "deposit", item.stock, "Initial stock");
+  return item;
+}
+
+// Deposit stock
+export function depositItem(itemId: string, quantity: number, notes?: string): Item | null {
+  const item = items.find(i => i.id === itemId);
+  if (!item) return null;
+
+  item.stock += quantity;
+  addLog(item.id, "deposit", quantity, notes);
+  return item;
+}
+
+// Withdraw stock
+export function withdrawItem(itemId: string, quantity: number, notes?: string): Item | null {
+  const item = items.find(i => i.id === itemId);
+  if (!item) return null;
+
+  if (item.stock < quantity) throw new Error("Not enough stock");
+  item.stock -= quantity;
+  addLog(item.id, "withdraw", quantity, notes);
+  return item;
+}
+
+// Update stock directly (manual correction)
+export function updateItemStock(itemId: string, newStock: number, notes?: string): Item | null {
+  const item = items.find(i => i.id === itemId);
+  if (!item) return null;
+
+  const diff = newStock - item.stock;
+  item.stock = newStock;
+  addLog(item.id, "update", diff, notes || "Manual adjustment");
+  return item;
+}
+
+// Get logs
+export function getLogs(): Log[] {
+  return logs;
+}

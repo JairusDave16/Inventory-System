@@ -1,31 +1,43 @@
 // src/components/EditItemModal.tsx
 import { useState, useEffect } from "react";
-import axios from "../api/axios";
+import { updateItem } from "../api/items";
+import { Item } from "../types/Item";
 
 interface EditItemModalProps {
   isOpen: boolean;
   onClose: () => void;
-  item: any;
-  onUpdated: () => void;
+  item: Item | null;
+  onSave: (updatedItem: Item) => void;
 }
 
-export default function EditItemModal({ isOpen, onClose, item, onUpdated }: EditItemModalProps) {
+export default function EditItemModal({ isOpen, onClose, item, onSave }: EditItemModalProps) {
   const [name, setName] = useState("");
-  const [quantity, setQuantity] = useState(0);
+  const [description, setDescription] = useState("");
+  const [unit, setUnit] = useState("");
+  const [category, setCategory] = useState("");
 
   useEffect(() => {
     if (item) {
-      setName(item.name);
-      setQuantity(item.quantity);
+      setName(item.name || "");
+      setDescription(item.description || "");
+      setUnit(item.unit || "");
+      setCategory(item.category || "");
     }
   }, [item]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !item) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await axios.put(`/items/${item.id}`, { name, quantity });
-    onUpdated();
+
+    const updatedItem = await updateItem(item.id, {
+      name,
+      description,
+      unit,
+      category,
+    });
+
+    onSave(updatedItem); // notify parent with the updated item
     onClose();
   };
 
@@ -43,16 +55,34 @@ export default function EditItemModal({ isOpen, onClose, item, onUpdated }: Edit
               required
             />
           </div>
+
           <div>
-            <label className="block mb-1">Quantity</label>
+            <label className="block mb-1">Description</label>
             <input
-              type="number"
               className="border p-2 w-full"
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-              required
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
             />
           </div>
+
+          <div>
+            <label className="block mb-1">Unit</label>
+            <input
+              className="border p-2 w-full"
+              value={unit}
+              onChange={(e) => setUnit(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1">Category</label>
+            <input
+              className="border p-2 w-full"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            />
+          </div>
+
           <div className="flex justify-end gap-2">
             <button type="button" onClick={onClose} className="px-4 py-2 border rounded">
               Cancel
