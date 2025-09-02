@@ -50,7 +50,7 @@ export default function InventoryList() {
         isOpen={!!editingItem}
         item={editingItem}
         onClose={() => setEditingItem(null)}
-        onUpdated={fetchItems}
+        onSave={fetchItems}
       />
     </div>
   );

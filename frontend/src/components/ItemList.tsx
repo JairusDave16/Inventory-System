@@ -35,22 +35,31 @@ export default function ItemList() {
   };
 
   const loadLogs = async (itemId: string) => {
-    const data = await getItemLogs(itemId);
-    setLogs(data);
-  };
+  const data = await getItemLogs(itemId);
+
+  // Sort logs by date descending (newest first)
+  const sortedLogs = data.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  setLogs(sortedLogs);
+};
+
 
   const handleAdjustStock = async (
-    item: Item,
-    type: "deposit" | "withdraw"
-  ) => {
-    const quantity = parseInt(prompt(`Enter quantity to ${type}:`) || "0");
-    if (quantity <= 0) return;
+  item: Item,
+  type: "deposit" | "withdraw"
+) => {
+  const quantity = parseInt(prompt(`Enter quantity to ${type}:`) || "0");
+  if (quantity <= 0) return;
 
-    await adjustStock(item.id, type, quantity, `${type} via UI`);
-    await loadItems();
+  const notes = prompt("Enter notes (optional):") || undefined;
 
-    if (selectedItem?.id === item.id) loadLogs(item.id);
-  };
+  await adjustStock(item.id, type, quantity, notes);
+  await loadItems();
+
+  if (selectedItem?.id === item.id) loadLogs(item.id);
+};
 
   const handleCreateItem = async () => {
     if (!newItemName) return alert("Name is required");
@@ -203,6 +212,9 @@ export default function ItemList() {
             setItems((prev) =>
               prev.map((it) => (it.id === updatedItem.id ? updatedItem : it))
             );
+            if (selectedItem?.id === updatedItem.id) {
+              loadLogs(updatedItem.id); // Refresh logs after editing
+            }
             setEditingItem(null);
           }}
         />
