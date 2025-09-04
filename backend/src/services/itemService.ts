@@ -37,21 +37,26 @@ export function depositItem(itemId: string, quantity: number, notes?: string): I
   const item = items.find(i => i.id === itemId);
   if (!item) return null;
 
-  item.stock += quantity;
-  addLog(item.id, "deposit", quantity, notes);
+  const q = Number(quantity);
+  item.stock += q;
+  addLog(item.id, "deposit", q, notes);
+  console.log(`Deposited ${q} to ${item.name}, new stock: ${item.stock}`);
   return item;
 }
 
-// Withdraw stock
 export function withdrawItem(itemId: string, quantity: number, notes?: string): Item | null {
   const item = items.find(i => i.id === itemId);
   if (!item) return null;
 
-  if (item.stock < quantity) throw new Error("Not enough stock");
-  item.stock -= quantity;
-  addLog(item.id, "withdraw", quantity, notes);
+  const q = Number(quantity);
+  if (item.stock < q) throw new Error("Not enough stock");
+
+  item.stock -= q;
+  addLog(item.id, "withdraw", q, notes);
+  console.log(`Withdrew ${q} from ${item.name}, new stock: ${item.stock}`);
   return item;
 }
+
 
 // Update stock directly (manual correction)
 export function updateItemStock(itemId: string, newStock: number, notes?: string): Item | null {

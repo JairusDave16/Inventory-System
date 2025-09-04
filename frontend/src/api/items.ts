@@ -21,15 +21,22 @@ export const updateItem = async (id: string, data: Partial<Item>): Promise<Item>
   return res.data;
 };
 
+// Adjust stock for an item (deposit or withdraw)
 export const adjustStock = async (
   id: string,
   type: "deposit" | "withdraw",
   quantity: number,
   notes?: string
-) => {
-  const res = await api.post(`/items/${id}/adjust`, { type, quantity, notes });
-  return res.data;
+): Promise<Item> => {
+  try {
+    const res = await api.post(`/items/${id}/adjust`, { type, quantity, notes });
+    return res.data;
+  } catch (error: any) {
+    // Pass along backend error to frontend handler
+    throw error.response?.data || error;
+  }
 };
+
 
 export const deleteItem = async (id: string) => {
   const res = await api.delete(`/items/${id}`);

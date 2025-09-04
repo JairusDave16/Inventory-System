@@ -30,12 +30,13 @@ export default function EditItemModal({ isOpen, onClose, item, onSave }: EditIte
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const updatedItem = await updateItem(item.id, {
-      name,
-      description,
-      unit,
-      category,
-    });
+    const updatedItem = await updateItem(item.id.toString(), {
+  name,
+  description,
+  unit,
+  category,
+});
+
 
     onSave(updatedItem); // notify parent with the updated item
     onClose();

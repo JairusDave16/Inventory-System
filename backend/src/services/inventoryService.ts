@@ -73,35 +73,37 @@ export class InventoryService {
 }
 
 static deposit(id: number, amount: number): InventoryItem {
-    if (amount <= 0) {
-      throw new Error("Deposit amount must be greater than zero");
-    }
-
-    const item = this.getById(id);
-    if (!item) throw new Error(`Item with id ${id} not found`);
-
-    item.quantity = (item.quantity ?? 0) + amount;
-
-    return { ...item }; // return copy
+  if (amount <= 0) {
+    throw new Error("Deposit amount must be greater than zero");
   }
 
-  static withdraw(id: number, amount: number): InventoryItem {
-    if (amount <= 0) {
-      throw new Error("Withdraw amount must be greater than zero");
-    }
+  // get the actual reference, not a copy
+  const item = inventory.find((i) => i.id === id);
+  if (!item) throw new Error(`Item with id ${id} not found`);
 
-    const item = this.getById(id);
-    if (!item) throw new Error(`Item with id ${id} not found`);
+  item.quantity = (item.quantity ?? 0) + amount;
 
-    if ((item.quantity ?? 0) < amount) {
-      throw new Error(
-        `Not enough stock to withdraw. Available: ${item.quantity}, Requested: ${amount}`
-      );
-    }
+  return { ...item }; // return copy
+}
 
-    item.quantity -= amount;
-
-    return { ...item }; // return copy
+static withdraw(id: number, amount: number): InventoryItem {
+  if (amount <= 0) {
+    throw new Error("Withdraw amount must be greater than zero");
   }
+
+  const item = inventory.find((i) => i.id === id);
+  if (!item) throw new Error(`Item with id ${id} not found`);
+
+  if ((item.quantity ?? 0) < amount) {
+    throw new Error(
+      `Not enough stock to withdraw. Available: ${item.quantity}, Requested: ${amount}`
+    );
+  }
+
+  item.quantity -= amount;
+
+  return { ...item }; // return copy
+}
+
 
 }
