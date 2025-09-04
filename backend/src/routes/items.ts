@@ -1,5 +1,5 @@
+// backend/src/routes/itemRoutes.ts
 import { Router } from "express";
-import { v4 as uuidv4 } from "uuid";
 import { Item } from "../types/Item";
 import { Log } from "../types/Log";
 
@@ -8,17 +8,19 @@ const router = Router();
 // In-memory storage
 let items: Item[] = [];
 let logs: Log[] = [];
+let itemIdCounter = 1; // auto-increment for items
+let logIdCounter = 1;  // auto-increment for logs
 
 // Utility: add a log entry
 function addLog(
-  itemId: string,
-  type: "deposit" | "withdraw",
+  itemId: number,
+  type: "deposit" | "withdraw" | "update",
   quantity: number,
   notes?: string
 ) {
   logs.push({
-    id: Date.now().toString(),
-    itemId, // ✅ now a string
+    id: logIdCounter++, // number
+    itemId,             // number
     type,
     quantity,
     notes: notes ?? "",
@@ -28,11 +30,12 @@ function addLog(
 
 // ✅ Get logs for an item
 router.get("/:id/logs", (req, res) => {
-  const { id } = req.params;
+  const id = Number(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
+
   const itemLogs = logs.filter((log) => log.itemId === id);
   res.json(itemLogs);
 });
-
 
 // Get all items
 router.get("/", (req, res) => {
@@ -42,7 +45,7 @@ router.get("/", (req, res) => {
 // Add new item
 router.post("/", (req, res) => {
   const newItem: Item = {
-    id: uuidv4(),
+    id: itemIdCounter++, // number
     name: req.body.name,
     stock: req.body.stock || 0,
     unit: req.body.unit,
@@ -60,9 +63,10 @@ router.post("/", (req, res) => {
 
 // Adjust stock: deposit or withdraw
 router.post("/:id/adjust", (req, res) => {
-  const { id } = req.params;
-  const { type, quantity, notes } = req.body;
+  const id = Number(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
 
+  const { type, quantity, notes } = req.body;
   const item = items.find((i) => i.id === id);
   if (!item) return res.status(404).json({ error: "Item not found" });
 
@@ -87,7 +91,9 @@ router.post("/:id/adjust", (req, res) => {
 
 // Update item
 router.put("/:id", (req, res) => {
-  const { id } = req.params;
+  const id = Number(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
+
   const index = items.findIndex((item) => item.id === id);
   if (index === -1) return res.status(404).json({ error: "Item not found" });
 
@@ -97,10 +103,11 @@ router.put("/:id", (req, res) => {
 
 // Delete item
 router.delete("/:id", (req, res) => {
-  const { id } = req.params;
+  const id = Number(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
+
   items = items.filter((item) => item.id !== id);
   res.status(204).send();
 });
-
 
 export default router;

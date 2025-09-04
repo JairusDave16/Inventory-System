@@ -1,109 +1,72 @@
-import { InventoryItem } from "../types/inventory";
+// src/services/inventoryService.ts
+import { InventoryItem, NewInventoryItem } from "../types/inventory";
+import { logService } from "./logService";
 
-let inventory: InventoryItem[] = [];
-let currentId = 1;
+let items: InventoryItem[] = [];
+let nextId = 1;
 
-export class InventoryService {
-  static getAll(): InventoryItem[] {
-    // return shallow copy so external code can’t mutate internal state
-    return [...inventory];
-  }
+export const InventoryService = {
+  getAll() {
+    return items;
+  },
 
-  static getById(id: number): InventoryItem | null {
-    const item = inventory.find((item) => item.id === id);
-    // return a shallow copy if found
-    return item ? { ...item } : null;
-  }
+  getById(id: number) {
+    return items.find((item) => item.id === id);
+  },
 
-  static getByCategory(category: string): InventoryItem[] {
-    return inventory
-      .filter((item) => item.category === category)
-      .map((item) => ({ ...item })); // return copies
-  }
+  create(data: NewInventoryItem) {
+    const newItem: InventoryItem = { id: nextId++, ...data };
+    items.push(newItem);
 
- static create(data: Omit<InventoryItem, "id">): InventoryItem {
-  const quantity = data.quantity ?? 0; // default to 0 if undefined
+    // Log creation as a "deposit"
+    logService.addLog(newItem.id, "deposit", data.quantity);
 
-  if (quantity < 0) {
-    throw new Error("Quantity cannot be negative");
-  }
+    return newItem;
+  },
 
-  const newItem: InventoryItem = {
-    id: currentId++,
-    ...data,
-    quantity, // override with ensured value
-  };
+  deposit(id: number, amount: number) {
+    const item = this.getById(id);
+    if (!item) throw new Error("Item not found");
 
-  inventory.push(newItem);
-  return { ...newItem }; // return copy
-}
+    item.quantity += amount;
+    logService.addLog(item.id, "deposit", amount);
 
-  static update(id: number, data: Partial<Omit<InventoryItem, "id">>): InventoryItem | null {
-  const item = inventory.find((i) => i.id === id);
+    return item;
+  },
+
+  withdraw(id: number, amount: number) {
+    const item = this.getById(id);
+    if (!item) throw new Error("Item not found");
+    if (item.quantity < amount) throw new Error("Insufficient stock");
+
+    item.quantity -= amount;
+    logService.addLog(item.id, "withdraw", amount);
+
+    return item;
+  },
+
+  getByCategory(category: string) {
+  return items.filter(item => item.category === category);
+},
+
+update(id: number, data: Partial<NewInventoryItem>) {
+  const item = this.getById(id);
   if (!item) return null;
 
-  if (data.name !== undefined) {
-    item.name = data.name;
-  }
-
+  Object.assign(item, data);
   if (data.quantity !== undefined) {
-    const newQuantity = data.quantity ?? 0; // default to 0
-    if (newQuantity < 0) {
-      throw new Error("Quantity cannot be negative");
-    }
-    item.quantity = newQuantity;
+    logService.addLog(item.id, "update", data.quantity);
   }
 
-  return { ...item }; // return a copy
+  return item;
+},
+
+delete(id: number) {
+  const index = items.findIndex(i => i.id === id);
+  if (index === -1) return null;
+  const [deleted] = items.splice(index, 1);
+  return deleted;
 }
 
-  static delete(id: number): InventoryItem {
-  const index = inventory.findIndex((item) => item.id === id);
-  if (index === -1) {
-    throw new Error(`Item with id ${id} not found`);
-  }
-
-  const [deleted] = inventory.splice(index, 1);
-
-  if (!deleted) {
-    throw new Error(`Unexpected error: failed to delete item with id ${id}`);
-  }
-
-  return { ...deleted }; // now guaranteed to be InventoryItem
-}
-
-static deposit(id: number, amount: number): InventoryItem {
-  if (amount <= 0) {
-    throw new Error("Deposit amount must be greater than zero");
-  }
-
-  // get the actual reference, not a copy
-  const item = inventory.find((i) => i.id === id);
-  if (!item) throw new Error(`Item with id ${id} not found`);
-
-  item.quantity = (item.quantity ?? 0) + amount;
-
-  return { ...item }; // return copy
-}
-
-static withdraw(id: number, amount: number): InventoryItem {
-  if (amount <= 0) {
-    throw new Error("Withdraw amount must be greater than zero");
-  }
-
-  const item = inventory.find((i) => i.id === id);
-  if (!item) throw new Error(`Item with id ${id} not found`);
-
-  if ((item.quantity ?? 0) < amount) {
-    throw new Error(
-      `Not enough stock to withdraw. Available: ${item.quantity}, Requested: ${amount}`
-    );
-  }
-
-  item.quantity -= amount;
-
-  return { ...item }; // return copy
-}
-
-
-}
+  
+};

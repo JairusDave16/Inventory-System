@@ -1,44 +1,133 @@
+// src/controllers/itemController.ts
 import { Request, Response } from "express";
-import { itemService } from "../services/itemService";
+import {
+  getItems,
+  addItem,
+  depositItem,
+  withdrawItem,
+  updateItemStock,
+  getLogs,
+} from "../services/itemService";
+import { Item } from "../types/Item";
 
-export const itemController = {
-  getAll: (req: Request, res: Response) => {
-    res.json(itemService.getAll());
-  },
+// ✅ Utility for consistent responses
+const sendResponse = (
+  res: Response,
+  status: number,
+  success: boolean,
+  message: string,
+  data?: any
+) => {
+  res.status(status).json({ success, message, data });
+};
 
-  getById: (req: Request, res: Response) => {
-  const { id } = req.params;
-  if (!id) return res.status(400).json({ message: "ID is required" });
+// GET all items
+export const getAllItems = (_req: Request, res: Response) => {
+  const items = getItems();
+  sendResponse(res, 200, true, "Items retrieved successfully", items);
+};
 
-  const item = itemService.getById(id);
-  if (!item) return res.status(404).json({ message: "Item not found" });
-  res.json(item);
-},
+// GET item by ID
+export const getItemById = (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  if (isNaN(id)) return sendResponse(res, 400, false, "Invalid item ID");
 
-  create: (req: Request, res: Response) => {
-    const { name, description, unit, category } = req.body;
-    if (!name) return res.status(400).json({ message: "Name is required" });
+  const item = getItems().find((i) => i.id === id);
+  if (!item) return sendResponse(res, 404, false, "Item not found");
 
-    const newItem = itemService.create({ name, description, unit, category });
-    res.status(201).json(newItem);
-  },
+  sendResponse(res, 200, true, "Item retrieved successfully", item);
+};
 
-  update: (req: Request, res: Response) => {
-  const { id } = req.params;
-  if (!id) return res.status(400).json({ message: "ID is required" });
+// CREATE new item
+export const createItem = (req: Request, res: Response) => {
+  const { name, stock, unit, category, description } = req.body;
 
-  const updatedItem = itemService.update(id, req.body);
-  if (!updatedItem) return res.status(404).json({ message: "Item not found" });
-  res.json(updatedItem);
-},
+  if (!name || stock === undefined) {
+    return sendResponse(res, 400, false, "Name and stock are required");
+  }
 
-  delete: (req: Request, res: Response) => {
-  const { id } = req.params;
-  if (!id) return res.status(400).json({ message: "ID is required" });
+  const newItem: Item = {
+    id: Date.now(), // or use a UUID if you prefer
+    name,
+    stock: Number(stock),
+    unit,
+    category,
+    description,
+  };
 
-  const success = itemService.delete(id);
-  if (!success) return res.status(404).json({ message: "Item not found" });
-  res.status(204).send();
-}
+  const added = addItem(newItem);
+  sendResponse(res, 201, true, "Item created successfully", added);
+};
 
+// DEPOSIT item
+export const depositItemController = (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  const quantity = Number(req.body.quantity);
+  const notes = req.body.notes;
+
+  if (isNaN(id) || isNaN(quantity) || quantity <= 0) {
+    return sendResponse(res, 400, false, "Invalid ID or quantity");
+  }
+
+  const updated = depositItem(id, quantity, notes);
+  if (!updated) return sendResponse(res, 404, false, "Item not found");
+
+  sendResponse(res, 200, true, `Deposited ${quantity} successfully`, updated);
+};
+
+// WITHDRAW item
+export const withdrawItemController = (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  const quantity = Number(req.body.quantity);
+  const notes = req.body.notes;
+
+  if (isNaN(id) || isNaN(quantity) || quantity <= 0) {
+    return sendResponse(res, 400, false, "Invalid ID or quantity");
+  }
+
+  try {
+    const updated = withdrawItem(id, quantity, notes);
+    if (!updated) return sendResponse(res, 404, false, "Item not found");
+    sendResponse(res, 200, true, `Withdrew ${quantity} successfully`, updated);
+  } catch (err: any) {
+    sendResponse(res, 400, false, err.message);
+  }
+};
+
+// UPDATE item stock directly
+export const updateItemController = (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  const newStock = Number(req.body.stock);
+  const notes = req.body.notes;
+
+  if (isNaN(id) || isNaN(newStock) || newStock < 0) {
+    return sendResponse(res, 400, false, "Invalid ID or stock");
+  }
+
+  const updated = updateItemStock(id, newStock, notes);
+  if (!updated) return sendResponse(res, 404, false, "Item not found");
+
+  sendResponse(res, 200, true, "Stock updated successfully", updated);
+};
+
+// GET logs for an item
+export const getItemLogs = (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  if (isNaN(id)) return sendResponse(res, 400, false, "Invalid item ID");
+
+  const itemLogs = getLogs().filter((log) => log.itemId === id);
+  sendResponse(res, 200, true, "Logs retrieved successfully", itemLogs);
+};
+
+// DELETE item
+export const deleteItemController = (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  if (isNaN(id)) return sendResponse(res, 400, false, "Invalid item ID");
+
+  const allItems = getItems();
+  const index = allItems.findIndex((i) => i.id === id);
+  if (index === -1) return sendResponse(res, 404, false, "Item not found");
+
+  allItems.splice(index, 1);
+  sendResponse(res, 200, true, "Item deleted successfully");
 };

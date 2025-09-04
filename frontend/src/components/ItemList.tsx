@@ -45,11 +45,18 @@ const fetchItems = async () => {
   }
 };
 
-  // Fetch logs for an item
-  const fetchLogs = async (itemId: number) => {
+// ---------------- new state ----------------
+const [isLogsLoading, setIsLogsLoading] = useState(false);
+
+// ---------------- fetchLogs ----------------
+const fetchLogs = async (item: Item) => {
+  setLogItem(item); // open modal immediately
+  setIsLogsLoading(true);
+  setLogs([]); // clear previous logs
+
   try {
-    const res = await axios.get(`/logs/${itemId}`);
-    console.log("Logs API response:", res.data); // debug output
+    const res = await axios.get(`/logs/${item.id}`);
+    console.log("Logs API response:", res.data);
 
     if (res.data && Array.isArray(res.data.data)) {
       setLogs(res.data.data);
@@ -59,14 +66,14 @@ const fetchItems = async () => {
       console.warn("Unexpected logs response format:", res.data);
       setLogs([]);
     }
-
-    // set the item for which logs are being viewed
-    setLogItem(items.find((it) => it.id === itemId) || null);
   } catch (err: any) {
     console.error("Failed to fetch logs:", err);
     setLogs([]);
+  } finally {
+    setIsLogsLoading(false);
   }
 };
+
 
   // Handle Add Item
   const handleAddItem = async () => {
@@ -198,7 +205,7 @@ const handleTransaction = async () => {
                   </button>
                   <button
                     className="btn btn-sm btn-success me-2"
-                    onClick={() => fetchLogs(item.id)}
+                    onClick={() => fetchLogs(item)}
                   >
                     Logs
                   </button>
@@ -311,7 +318,9 @@ const handleTransaction = async () => {
                 <button className="btn-close" onClick={() => setLogItem(null)} />
               </div>
               <div className="modal-body">
-                {logs.length > 0 ? (
+                {isLogsLoading ? (
+                  <p>⏳ Fetching logs...</p>
+                ) : logs.length > 0 ? (
                   <table className="table">
                     <thead>
                       <tr>

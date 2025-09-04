@@ -6,19 +6,21 @@ import { Log } from "../types/Log";
 // In-memory storage (replace later with DB or JSON persistence)
 let items: Item[] = [];
 let logs: Log[] = [];
+let logId = 1; // global counter
 
 // Utility: add a log entry
-function addLog(itemId: string, type: Log["type"], quantity: number, notes?: string): void {
+function addLog(itemId: number, type: Log["type"], quantity: number, notes?: string): void {
   const log: Log = {
-  id: uuidv4(),
-  itemId,
-  type,
-  quantity,
-  date: new Date().toISOString(),
-  ...(notes ? { notes } : {}), // ✅ only include notes if provided
-};
+    id: logId++, // number, auto-increment
+    itemId,      // already number
+    type,
+    quantity,
+    date: new Date().toISOString(),
+    ...(notes ? { notes } : {}), // ✅ only include notes if provided
+  };
   logs.push(log);
 }
+
 
 // Get all items
 export function getItems(): Item[] {
@@ -33,7 +35,7 @@ export function addItem(item: Item): Item {
 }
 
 // Deposit stock
-export function depositItem(itemId: string, quantity: number, notes?: string): Item | null {
+export function depositItem(itemId: number, quantity: number, notes?: string): Item | null {
   const item = items.find(i => i.id === itemId);
   if (!item) return null;
 
@@ -44,7 +46,7 @@ export function depositItem(itemId: string, quantity: number, notes?: string): I
   return item;
 }
 
-export function withdrawItem(itemId: string, quantity: number, notes?: string): Item | null {
+export function withdrawItem(itemId: number, quantity: number, notes?: string): Item | null {
   const item = items.find(i => i.id === itemId);
   if (!item) return null;
 
@@ -57,9 +59,7 @@ export function withdrawItem(itemId: string, quantity: number, notes?: string): 
   return item;
 }
 
-
-// Update stock directly (manual correction)
-export function updateItemStock(itemId: string, newStock: number, notes?: string): Item | null {
+export function updateItemStock(itemId: number, newStock: number, notes?: string): Item | null {
   const item = items.find(i => i.id === itemId);
   if (!item) return null;
 
