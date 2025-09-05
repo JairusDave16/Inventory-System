@@ -1,21 +1,27 @@
-import { Log } from "./Log";
+// backend/src/data/logStore.ts
+import { Log } from "../types/Log";
 
-let logs: Log[] = [];
+// in-memory store
+export const logs: Log[] = [];
 
-export function addLog(log: Omit<Log, "id" | "date">): Log {
-  const newLog: Log = {
-    id: crypto.randomUUID(),
-    date: new Date(),
-    ...log,
+// simple auto-increment for id
+let nextLogId = 1;
+
+export function addLog(itemId: number, type: Log["type"], quantity: number, notes?: string): Log {
+  const log: Log = {
+    id: nextLogId++,
+    itemId,
+    type,
+    quantity,
+    date: new Date().toISOString(),
+    ...(notes !== undefined ? { notes } : {}), // ✅ only include if provided
   };
-  logs.push(newLog);
-  return newLog;
+
+  logs.push(log);
+  return log;
 }
 
-export function listLogs(): Log[] {
+
+export function getLogs(): Log[] {
   return logs;
-}
-
-export function findLogsByItemId(itemId: string): Log[] {
-  return logs.filter(log => log.itemId === itemId);
 }
