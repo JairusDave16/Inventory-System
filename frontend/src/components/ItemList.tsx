@@ -56,16 +56,18 @@ const fetchLogs = async (item: Item) => {
 
   try {
     const res = await axios.get(`/logs/${item.id}`);
-    console.log("Logs API response:", res.data);
+    const rawLogs = res.data.data || res.data;
 
-    if (res.data && Array.isArray(res.data.data)) {
-      setLogs(res.data.data);
-    } else if (Array.isArray(res.data)) {
-      setLogs(res.data);
-    } else {
-      console.warn("Unexpected logs response format:", res.data);
-      setLogs([]);
-    }
+    // Map backend Log fields to frontend Log type
+    const mappedLogs: Log[] = rawLogs.map((l: any) => ({
+      id: Number(l.id),
+      itemId: Number(l.itemId),
+      type: l.type,
+      amount: l.quantity, // map quantity -> amount
+      timestamp: new Date(l.date).toISOString(), // map date -> timestamp
+    }));
+
+    setLogs(mappedLogs);
   } catch (err: any) {
     console.error("Failed to fetch logs:", err);
     setLogs([]);
@@ -73,6 +75,7 @@ const fetchLogs = async (item: Item) => {
     setIsLogsLoading(false);
   }
 };
+
 
 
   // Handle Add Item
