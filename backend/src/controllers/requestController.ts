@@ -1,12 +1,29 @@
 import { Request as ExpressRequest, Response } from "express";
 import { Request as RequestModel } from "../models/Request";
+import { items } from "../data/item"; // 🔹 should come from data, not routes
+import { Item } from "../models/Item"; // 🔹 use model, not types
 
 // In-memory storage for now
 let requests: RequestModel[] = [];
 let requestIdCounter = 1;
 
+// 🔹 Shared validation helper
+function findAndValidateRequest(id: number) {
+  const request = requests.find((r) => r.id === id);
+
+  if (!request) {
+    return { error: { status: 404, message: "Request not found" } };
+  }
+
+  if (request.status !== "pending") {
+    return { error: { status: 400, message: "Request already processed" } };
+  }
+
+  return { request };
+}
+
 // Get all requests
-export const getAllRequests = (req: ExpressRequest, res: Response) => {
+export const getAllRequests = (_req: ExpressRequest, res: Response) => {
   res.json(requests);
 };
 
@@ -15,7 +32,7 @@ export const createRequest = (req: ExpressRequest, res: Response) => {
   const { userId, itemId, quantity } = req.body;
 
   const newRequest: RequestModel = {
-    id: requestIdCounter++, // ✅ number id
+    id: requestIdCounter++,
     userId: Number(userId),
     itemId: Number(itemId),
     quantity: Number(quantity),
@@ -30,39 +47,62 @@ export const createRequest = (req: ExpressRequest, res: Response) => {
 
 // Get single request
 export const getRequestById = (req: ExpressRequest, res: Response) => {
-  const id = Number(req.params.id); // ✅ convert param to number
+  const id = Number(req.params.id);
   const request = requests.find((r) => r.id === id);
 
   if (!request) {
     return res.status(404).json({ error: "Request not found" });
   }
-
-  res.json(request);
-};
-
-// Update request status
-export const updateRequest = (req: ExpressRequest, res: Response) => {
-  const id = Number(req.params.id); // ✅ convert param to number
-  const request = requests.find((r) => r.id === id);
-
-  if (!request) {
-    return res.status(404).json({ error: "Request not found" });
-  }
-
-  const { status } = req.body;
-  if (!["pending", "approved", "rejected"].includes(status)) {
-    return res.status(400).json({ error: "Invalid status" });
-  }
-
-  request.status = status as "pending" | "approved" | "rejected";
-  request.updatedAt = new Date();
 
   res.json(request);
 };
 
 // Delete request
 export const deleteRequest = (req: ExpressRequest, res: Response) => {
-  const id = Number(req.params.id); // ✅ convert param to number
+  const id = Number(req.params.id);
   requests = requests.filter((r) => r.id !== id);
   res.status(204).send();
+};
+
+// Approve request
+export const approveRequest = (req: ExpressRequest, res: Response) => {
+  const id = Number(req.params.id);
+  const { request, error } = findAndValidateRequest(id);
+  if (error) return res.status(error.status).json({ error: error.message });
+
+  const item = items.find((i: Item) => i.id === request!.itemId);
+  if (!item) {
+    return res.status(404).json({ error: "Item not found" });
+  }
+  if (item.stock < request!.quantity) {
+    return res.status(400).json({ error: "Not enough stock" });
+  }
+
+  // ✅ Deduct stock
+  item.stock -= request!.quantity;
+
+  // ✅ Update request
+  request!.status = "approved";
+  request!.updatedAt = new Date();
+
+  res.json({
+    message: "Request approved and stock updated successfully",
+    request,
+    item,
+  });
+};
+
+// Reject request
+export const rejectRequest = (req: ExpressRequest, res: Response) => {
+  const id = Number(req.params.id);
+  const { request, error } = findAndValidateRequest(id);
+  if (error) return res.status(error.status).json({ error: error.message });
+
+  request!.status = "rejected";
+  request!.updatedAt = new Date();
+
+  res.json({
+    message: "Request rejected successfully",
+    request,
+  });
 };

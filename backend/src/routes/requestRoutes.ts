@@ -3,8 +3,9 @@ import {
   getAllRequests,
   createRequest,
   getRequestById,
-  updateRequest,
   deleteRequest,
+  approveRequest,
+  rejectRequest,   // ✅ new import
 } from "../controllers/requestController";
 
 const router = Router();
@@ -13,7 +14,10 @@ const router = Router();
 router.get("/", getAllRequests);         // GET /requests
 router.post("/", createRequest);         // POST /requests
 router.get("/:id", getRequestById);      // GET /requests/:id
-router.put("/:id", updateRequest);       // PUT /requests/:id
 router.delete("/:id", deleteRequest);    // DELETE /requests/:id
+
+// ✅ Approve / Reject routes
+router.put("/:id/approve", approveRequest);
+router.put("/:id/reject", rejectRequest);
 
 export default router;

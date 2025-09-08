@@ -2,11 +2,13 @@
 import { Router } from "express";
 import { Item } from "../types/Item";
 import { Log } from "../types/Log";
-import { items, logs } from "../data/store";
 
-let itemIdCounter = 1; // auto-increment for items
-let logIdCounter = 1;  // auto-increment for logs
 
+// In-memory storage
+export let items: Item[] = [];  // 🔹 export items so other modules can access
+let logs: Log[] = [];
+let itemIdCounter = 1;
+let logIdCounter = 1;
 const router = Router();
 
 // Utility: add a log entry
