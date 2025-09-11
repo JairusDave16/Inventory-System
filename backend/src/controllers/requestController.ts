@@ -1,9 +1,11 @@
 import { Request as ExpressRequest, Response } from "express";
 import { Request as RequestModel } from "../models/Request";
-import { items } from "../data/item"; // 🔹 should come from data, not routes
-import { Item } from "../models/Item"; // 🔹 use model, not types
+import { Item } from "../types/Item";
 
-// In-memory storage for now
+// 🔹 Import shared store
+import { items } from "../data/store";
+
+// In-memory storage for requests
 let requests: RequestModel[] = [];
 let requestIdCounter = 1;
 

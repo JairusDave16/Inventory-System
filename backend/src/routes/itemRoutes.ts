@@ -1,14 +1,15 @@
-// backend/src/routes/itemRoutes.ts
 import { Router } from "express";
 import { Item } from "../types/Item";
 import { Log } from "../types/Log";
 
+// 🔹 Import shared store instead of defining new arrays
+import {
+  items,
+  logs,
+  itemIdCounter,
+  logIdCounter,
+} from "../data/store";
 
-// In-memory storage
-export let items: Item[] = [];  // 🔹 export items so other modules can access
-let logs: Log[] = [];
-let itemIdCounter = 1;
-let logIdCounter = 1;
 const router = Router();
 
 // Utility: add a log entry
@@ -38,7 +39,7 @@ router.get("/:id/logs", (req, res) => {
 });
 
 // Get all items
-router.get("/", (req, res) => {
+router.get("/", (_req, res) => {
   res.json(items);
 });
 
