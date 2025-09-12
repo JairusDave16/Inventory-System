@@ -1,0 +1,1 @@
+{"version":3,"file":"inventoryService.d.ts","sourceRoot":"","sources":["../../src/services/inventoryService.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,aAAa,EAAE,gBAAgB,EAAE,MAAM,oBAAoB,CAAC;AAMrE,eAAO,MAAM,gBAAgB;;gBAKf,MAAM;iBAIL,gBAAgB;gBAUjB,MAAM,UAAU,MAAM;iBAUrB,MAAM,UAAU,MAAM;4BAWX,MAAM;eAIrB,MAAM,QAAQ,OAAO,CAAC,gBAAgB,CAAC;eAYvC,MAAM;CAQhB,CAAC"}

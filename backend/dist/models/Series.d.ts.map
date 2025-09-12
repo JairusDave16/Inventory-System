@@ -1,0 +1,1 @@
+{"version":3,"file":"Series.d.ts","sourceRoot":"","sources":["../../src/models/Series.ts"],"names":[],"mappings":"AACA,MAAM,WAAW,MAAM;IACrB,EAAE,EAAE,MAAM,CAAC;IACX,MAAM,EAAE,MAAM,CAAC;IACf,IAAI,EAAE,MAAM,CAAC;IACb,EAAE,EAAE,MAAM,CAAC;IACX,MAAM,EAAE,WAAW,GAAG,WAAW,CAAC;IAClC,SAAS,EAAE,IAAI,CAAC;CACjB"}

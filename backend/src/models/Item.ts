@@ -1,9 +1,12 @@
 // backend/src/models/Item.ts
+import { Series } from "./Series";
+
 export interface Item {
-  id: number; // ✅ now a number
+  id: number;
   name: string;
+  unit: string;
+  category: string;
   description?: string;
-  unit?: string;
-  category?: string;
-  stock: number;
+  stock: number;     // auto-calculated
+  series: Series[];  // list of ranges
 }
