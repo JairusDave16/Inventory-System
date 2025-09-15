@@ -1,6 +1,9 @@
 {
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "@types/node": "^24.4.0",
+    "concurrently": "^9.2.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
   },
   "scripts": {
     "dev": "concurrently \"cd backend && php artisan serve --port=8888\" \"cd frontend && npm start\""
