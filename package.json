@@ -6,6 +6,9 @@
     "typescript": "^5.9.2"
   },
   "scripts": {
-    "dev": "concurrently \"cd backend && php artisan serve --port=8888\" \"cd frontend && npm start\""
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm start\" \"cd backend && php artisan serve --port=8888\"",
+    "backend:dev": "cd backend && ts-node src/app.ts",
+    "backend:build": "cd backend && tsc",
+    "backend:start": "cd backend && node dist/app.js"
   }
 }

@@ -2,12 +2,11 @@ import { Router } from "express";
 import { Item } from "../types/Item";
 import { Log } from "../types/Log";
 
-// 🔹 Import shared store instead of defining new arrays
 import {
   items,
   logs,
-  itemIdCounter,
-  logIdCounter,
+  getNextItemId,
+  getNextLogId,
 } from "../data/store";
 
 const router = Router();
@@ -20,8 +19,8 @@ function addLog(
   notes?: string
 ) {
   logs.push({
-    id: logIdCounter++, // number
-    itemId,             // number
+    id: getNextLogId(), // ✅ use helper
+    itemId,
     type,
     quantity,
     notes: notes ?? "",
@@ -46,7 +45,7 @@ router.get("/", (_req, res) => {
 // Add new item
 router.post("/", (req, res) => {
   const newItem: Item = {
-    id: itemIdCounter++, // number
+    id: getNextItemId(), // ✅ use helper
     name: req.body.name,
     stock: req.body.stock || 0,
     unit: req.body.unit,
