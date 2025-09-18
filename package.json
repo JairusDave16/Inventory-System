@@ -10,5 +10,8 @@
     "backend:dev": "cd backend && ts-node src/app.ts",
     "backend:build": "cd backend && tsc",
     "backend:start": "cd backend && node dist/app.js"
+  },
+  "dependencies": {
+    "react-router-dom": "^7.9.1"
   }
 }

@@ -3,11 +3,7 @@ import { Request as RequestModel } from "../models/Request";
 import { Item } from "../types/Item";
 
 // 🔹 Import shared store
-import { items } from "../data/store";
-
-// In-memory storage for requests
-let requests: RequestModel[] = [];
-let requestIdCounter = 1;
+import { items, requests, getNextRequestId } from "../data/store";
 
 // 🔹 Shared validation helper
 function findAndValidateRequest(id: number) {
@@ -34,7 +30,7 @@ export const createRequest = (req: ExpressRequest, res: Response) => {
   const { userId, itemId, quantity } = req.body;
 
   const newRequest: RequestModel = {
-    id: requestIdCounter++,
+    id: getNextRequestId(),   // ✅ use global generator
     userId: Number(userId),
     itemId: Number(itemId),
     quantity: Number(quantity),
@@ -62,7 +58,10 @@ export const getRequestById = (req: ExpressRequest, res: Response) => {
 // Delete request
 export const deleteRequest = (req: ExpressRequest, res: Response) => {
   const id = Number(req.params.id);
-  requests = requests.filter((r) => r.id !== id);
+  const index = requests.findIndex((r) => r.id === id);
+  if (index === -1) return res.status(404).json({ error: "Request not found" });
+
+  requests.splice(index, 1);
   res.status(204).send();
 };
 
