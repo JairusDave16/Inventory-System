@@ -1,10 +1,11 @@
 // frontend/src/types.ts
 
 export interface Request {
-  id: string;
-  title: string;
-  description: string;
+  id: number; // ✅ now number
+  userId: number;
+  itemId: number;
+  quantity: number;
   status: "pending" | "approved" | "rejected";
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
