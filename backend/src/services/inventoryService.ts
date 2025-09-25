@@ -19,7 +19,7 @@ export const InventoryService = {
     items.push(newItem);
 
     // Log creation as a "deposit"
-    logService.addLog(newItem.id, "deposit", data.quantity);
+    logService.addLog(newItem.id, "deposit", data.stock);
 
     return newItem;
   },
@@ -28,7 +28,7 @@ export const InventoryService = {
     const item = this.getById(id);
     if (!item) throw new Error("Item not found");
 
-    item.quantity += amount;
+    item.stock += amount;
     logService.addLog(item.id, "deposit", amount);
 
     return item;
@@ -37,9 +37,9 @@ export const InventoryService = {
   withdraw(id: number, amount: number) {
     const item = this.getById(id);
     if (!item) throw new Error("Item not found");
-    if (item.quantity < amount) throw new Error("Insufficient stock");
+    if (item.stock < amount) throw new Error("Insufficient stock");
 
-    item.quantity -= amount;
+    item.stock -= amount;
     logService.addLog(item.id, "withdraw", amount);
 
     return item;
@@ -54,8 +54,8 @@ update(id: number, data: Partial<NewInventoryItem>) {
   if (!item) return null;
 
   Object.assign(item, data);
-  if (data.quantity !== undefined) {
-    logService.addLog(item.id, "update", data.quantity);
+  if (data.stock !== undefined) {
+    logService.addLog(item.id, "update", data.stock);
   }
 
   return item;

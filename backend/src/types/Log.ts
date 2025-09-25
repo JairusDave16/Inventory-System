@@ -3,7 +3,7 @@ export type Log = {
   id: number; // now number
   itemId: number; // now number
   type: "deposit" | "withdraw" | "update";
-  quantity: number;
+  stock: number;
   notes?: string;
   date: string; // ISO string from backend
 };

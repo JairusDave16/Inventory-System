@@ -3,14 +3,24 @@ import React, { useState, useEffect } from "react";
 import axios from "../api/axios";
 import { Item } from "../types/Item";
 import { Log } from "../types/Log";
-import Layout from "./Layout"; // ✅ Import Layout
+import Layout from "./Layout";
+import { LogsModal } from "./LogsModal";
+
+// ✅ Local type for form inputs (not tied to backend Item type)
+interface ItemFormInput {
+  name: string;
+  category: string;
+  quantity: number;
+  series: string;
+}
 
 export default function ItemList() {
   const [items, setItems] = useState<Item[]>([]);
   const [logs, setLogs] = useState<Log[]>([]);
   const [filterCategory, setFilterCategory] = useState<string>("");
 
-  const [newItem, setNewItem] = useState<Omit<Item, "id">>({
+  // ✅ use local ItemFormInput for new item state
+  const [newItem, setNewItem] = useState<ItemFormInput>({
     name: "",
     category: "",
     quantity: 0,
@@ -19,7 +29,9 @@ export default function ItemList() {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [transactionItem, setTransactionItem] = useState<Item | null>(null);
-  const [transactionType, setTransactionType] = useState<"deposit" | "withdraw">("deposit");
+  const [transactionType, setTransactionType] = useState<"deposit" | "withdraw">(
+    "deposit"
+  );
   const [transactionAmount, setTransactionAmount] = useState<number>(0);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [logItem, setLogItem] = useState<Item | null>(null);
@@ -101,8 +113,8 @@ export default function ItemList() {
     const latestItem = items.find((it) => it.id === transactionItem.id);
     if (!latestItem) return;
 
-    if (transactionType === "withdraw" && transactionAmount > latestItem.quantity) {
-      alert(`Not enough stock. Available: ${latestItem.quantity}`);
+    if (transactionType === "withdraw" && transactionAmount > latestItem.stock) {
+      alert(`Not enough stock. Available: ${latestItem.stock}`);
       return;
     }
 
@@ -159,7 +171,7 @@ export default function ItemList() {
                   <th>ID</th>
                   <th>Name</th>
                   <th>Category</th>
-                  <th>Quantity</th>
+                  <th>Stock</th>
                   <th>Series</th>
                   <th>Actions</th>
                 </tr>
@@ -177,10 +189,10 @@ export default function ItemList() {
                       <td>
                         <span
                           className={`badge ${
-                            item.quantity > 10 ? "bg-success" : "bg-warning text-dark"
+                            item.stock > 10 ? "bg-success" : "bg-warning text-dark"
                           }`}
                         >
-                          {item.quantity}
+                          {item.stock}
                         </span>
                       </td>
                       <td>{item.series}</td>
@@ -220,143 +232,158 @@ export default function ItemList() {
         </div>
 
         {/* Add Item Modal */}
-{showAddModal && (
-  <div className="modal d-block" tabIndex={-1} role="dialog">
-    <div className="modal-dialog" role="document">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h5 className="modal-title">➕ Add New Item</h5>
-          <button
-            type="button"
-            className="btn-close"
-            onClick={() => setShowAddModal(false)}
-          ></button>
-        </div>
-        <div className="modal-body">
-          <div className="mb-3">
-            <label className="form-label">Name</label>
-            <input
-              type="text"
-              className="form-control"
-              value={newItem.name}
-              onChange={(e) =>
-                setNewItem({ ...newItem, name: e.target.value })
-              }
-            />
+        {showAddModal && (
+          <div className="modal d-block" tabIndex={-1} role="dialog">
+            <div className="modal-dialog" role="document">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">➕ Add New Item</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setShowAddModal(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label className="form-label">Name</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={newItem.name}
+                      onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Category</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={newItem.category}
+                      onChange={(e) =>
+                        setNewItem({ ...newItem, category: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Quantity</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={newItem.quantity}
+                      onChange={(e) =>
+                        setNewItem({ ...newItem, quantity: Number(e.target.value) })
+                      }
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Series</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={newItem.series}
+                      onChange={(e) =>
+                        setNewItem({ ...newItem, series: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setShowAddModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleAddItem}
+                  >
+                    Save Item
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="mb-3">
-            <label className="form-label">Category</label>
-            <input
-              type="text"
-              className="form-control"
-              value={newItem.category}
-              onChange={(e) =>
-                setNewItem({ ...newItem, category: e.target.value })
-              }
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Quantity</label>
-            <input
-              type="number"
-              className="form-control"
-              value={newItem.quantity}
-              onChange={(e) =>
-                setNewItem({ ...newItem, quantity: Number(e.target.value) })
-              }
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Series</label>
-            <input
-              type="text"
-              className="form-control"
-              value={newItem.series}
-              onChange={(e) =>
-                setNewItem({ ...newItem, series: e.target.value })
-              }
-            />
-          </div>
-        </div>
-        <div className="modal-footer">
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => setShowAddModal(false)}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={handleAddItem}
-          >
-            Save Item
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-{/* Transaction Modal */}
-{showTransactionModal && transactionItem && (
-  <div className="modal d-block" tabIndex={-1} role="dialog">
-    <div className="modal-dialog" role="document">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h5 className="modal-title">
-            {transactionType === "deposit" ? "💰 Deposit" : "📤 Withdraw"} Item
-          </h5>
-          <button
-            type="button"
-            className="btn-close"
-            onClick={() => setShowTransactionModal(false)}
-          ></button>
-        </div>
-        <div className="modal-body">
-          <p className="fw-bold mb-2">Item: {transactionItem.name}</p>
-          <p className="mb-3">
-            Current Stock:{" "}
-            <span className="badge bg-info">{transactionItem.quantity}</span>
-          </p>
+        )}
 
-          <div className="mb-3">
-            <label className="form-label">
-              {transactionType === "deposit" ? "Deposit Amount" : "Withdraw Amount"}
-            </label>
-            <input
-              type="number"
-              min="1"
-              className="form-control"
-              value={transactionAmount}
-              onChange={(e) => setTransactionAmount(Number(e.target.value))}
-              required
-            />
-          </div>
-        </div>
-        <div className="modal-footer">
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => setShowTransactionModal(false)}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            className={`btn ${
-              transactionType === "deposit" ? "btn-success" : "btn-warning"
-            }`}
-            onClick={handleTransaction}
-          >
-            {transactionType === "deposit" ? "Confirm Deposit" : "Confirm Withdraw"}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+        {/* Transaction Modal */}
+        {showTransactionModal && transactionItem && (
+          <div className="modal d-block" tabIndex={-1} role="dialog">
+            <div className="modal-dialog" role="document">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">
+                    {transactionType === "deposit" ? "💰 Deposit" : "📤 Withdraw"} Item
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setShowTransactionModal(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <p className="fw-bold mb-2">Item: {transactionItem.name}</p>
+                  <p className="mb-3">
+                    Current Stock:{" "}
+                    <span className="badge bg-info">{transactionItem.stock}</span>
+                  </p>
 
+                  <div className="mb-3">
+                    <label className="form-label">
+                      {transactionType === "deposit"
+                        ? "Deposit Amount"
+                        : "Withdraw Amount"}
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="form-control"
+                      value={transactionAmount}
+                      onChange={(e) => setTransactionAmount(Number(e.target.value))}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setShowTransactionModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn ${
+                      transactionType === "deposit" ? "btn-success" : "btn-warning"
+                    }`}
+                    onClick={handleTransaction}
+                  >
+                    {transactionType === "deposit"
+                      ? "Confirm Deposit"
+                      : "Confirm Withdraw"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Logs Modal */}
+        {logItem && (
+          <LogsModal
+            logs={logs}
+            item={logItem}
+            isLoading={isLogsLoading}
+            onClose={() => {
+              setLogItem(null); // close modal
+              setLogs([]); // clear old logs
+            }}
+          />
+        )}
       </div>
     </Layout>
   );

@@ -13,12 +13,12 @@ export const logService = {
     return logs.filter((log) => log.itemId === itemId);
   },
 
-addLog(itemId: number, type: "deposit" | "withdraw" | "update", quantity: number) {
+addLog(itemId: number, type: "deposit" | "withdraw" | "update", stock: number) {
   const newLog: Log = {
     id: logId++,
     itemId,
     type,                       
-    quantity,                   
+    stock,                   
     date: new Date().toISOString(),
   };
 

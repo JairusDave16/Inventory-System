@@ -56,29 +56,37 @@ export const getItemsByCategory = async (req: Request, res: Response) => {
 // CREATE new item
 export const createItem = async (req: Request, res: Response) => {
   try {
-    const { name, category, quantity, series } = req.body;
+    const { name, category, stock, series } = req.body;
 
-    if (!name || !category || quantity === undefined) {
-      return sendResponse(res, 400, false, "Name, category, and quantity are required");
+    if (!name || !category || stock === undefined) {
+      return sendResponse(res, 400, false, "Name, category, and stock are required");
     }
 
-    const newItem = InventoryService.create({ name, category, quantity, series });
+    const newItem = InventoryService.create({ name, category, stock, series });
     sendResponse(res, 201, true, "Item created successfully", newItem);
   } catch (error: any) {
     sendResponse(res, 500, false, error.message || "Failed to create item");
   }
 };
 
+
 // UPDATE item
 export const updateItem = async (req: Request, res: Response) => {
   try {
-    const id = Number(req.params.id);
-    if (isNaN(id)) return sendResponse(res, 400, false, "Invalid item ID");
+    const { name, category, stock, series } = req.body;
 
-    const updated = InventoryService.update(id, req.body);
-    if (!updated) return sendResponse(res, 404, false, "Item not found");
+    const updatedItem = InventoryService.update(Number(req.params.id), {
+      name,
+      category,
+      stock,
+      series,
+    });
 
-    sendResponse(res, 200, true, "Item updated successfully", updated);
+    if (!updatedItem) {
+      return sendResponse(res, 404, false, "Item not found");
+    }
+
+    sendResponse(res, 200, true, "Item updated successfully", updatedItem);
   } catch (error: any) {
     sendResponse(res, 500, false, error.message || "Failed to update item");
   }

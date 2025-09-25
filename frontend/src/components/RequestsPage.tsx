@@ -134,20 +134,21 @@ const RequestsPage: React.FC = () => {
             </div>
             <div className="col-md-4">
               <select
-                className="form-select"
-                value={newRequest.itemId}
-                onChange={(e) =>
-                  setNewRequest({ ...newRequest, itemId: e.target.value })
-                }
-                required
-              >
-                <option value="">Select Item</option>
-                {items.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name} ({item.quantity} left)
-                  </option>
-                ))}
-              </select>
+  className="form-select"
+  value={newRequest.itemId}
+  onChange={(e) =>
+    setNewRequest({ ...newRequest, itemId: e.target.value })
+  }
+  required
+>
+  <option value="">Select Item</option>
+  {items.map((item) => (
+    <option key={item.id} value={item.id}>
+      {item.name} ({item.stock} left)
+    </option>
+  ))}
+</select>
+
             </div>
             <div className="col-md-2">
               <input

@@ -2,9 +2,15 @@
 export interface Item {
   id: number;
   name: string;
-  description?: string;
-  unit?: string;
   category?: string;
-  quantity: number;
+  stock: number;   // ✅ matches backend
+  series?: string;
+}
+
+// ✅ Local form state type for frontend inputs
+export interface ItemFormState {
+  name: string;
+  category?: string;
+  quantity: number;   // ✅ only for form
   series?: string;
 }

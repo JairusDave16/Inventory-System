@@ -1,9 +1,10 @@
 // backend/src/types/Item.ts
 export interface Item {
-  id: number; // ✅ now a number
+  id: number;
   name: string;
   description?: string;
   unit?: string;
   category?: string;
   stock: number;
+  series?: string; // 👈 add this
 }

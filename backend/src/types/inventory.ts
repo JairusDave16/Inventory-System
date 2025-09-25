@@ -1,9 +1,10 @@
+// src/types/inventory.ts
 export interface InventoryItem {
   id: number;
   name: string;
   category: string;
-  quantity: number;
-  series?: string; // still optional
+  stock: number;       // ✅ renamed from quantity → stock
+  series?: string;     // still optional
 }
 
 // For creating a new item (id is auto-generated)
