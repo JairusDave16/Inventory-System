@@ -1,3 +1,4 @@
+// src/components/ItemList.tsx
 import React, { useState, useEffect } from "react";
 import axios from "../api/axios";
 import { Item } from "../types/Item";
@@ -5,38 +6,30 @@ import { Log } from "../types/Log";
 import Layout from "./Layout";
 import { LogsModal } from "./LogsModal";
 import { TransactionModal } from "./TransactionModal";
-import { AddItemModal } from "./AddItemModal";
-
-interface ItemFormInput {
-  name: string;
-  category: string;
-  stock: number;
-  series: string;
-}
+import { AddItemModal, ItemFormState } from "./AddItemModal";
 
 export default function ItemList() {
   const [items, setItems] = useState<Item[]>([]);
   const [logs, setLogs] = useState<Log[]>([]);
   const [filterCategory, setFilterCategory] = useState<string>("");
-
-  const [newItem, setNewItem] = useState<ItemFormInput>({
-    name: "",
-    category: "",
-    stock: 0,
-    series: "",
-  });
-
   const [showAddModal, setShowAddModal] = useState(false);
   const [transactionItem, setTransactionItem] = useState<Item | null>(null);
   const [transactionType, setTransactionType] = useState<"deposit" | "withdraw">("deposit");
   const [transactionAmount, setTransactionAmount] = useState<number>(0);
   const [logItem, setLogItem] = useState<Item | null>(null);
   const [isLogsLoading, setIsLogsLoading] = useState(false);
+  const [newItem, setNewItem] = useState<ItemFormState>({
+    name: "",
+    category: "",
+    stock: 0,
+    series: "",
+  });
 
   useEffect(() => {
     fetchItems();
   }, []);
 
+  // Fetch all items
   const fetchItems = async () => {
     try {
       const res = await axios.get("/inventory");
@@ -46,6 +39,7 @@ export default function ItemList() {
     }
   };
 
+  // Fetch logs for a single item
   const fetchLogs = async (item: Item) => {
     setLogItem(item);
     setIsLogsLoading(true);
@@ -58,8 +52,8 @@ export default function ItemList() {
           id: Number(l.id),
           itemId: Number(l.itemId),
           type: l.type,
-          amount: l.quantity,
-          timestamp: new Date(l.date).toISOString(),
+          stock: Number(l.quantity), // standardized stock
+          date: new Date(l.date).toISOString(), // standardized date
         }))
       );
     } catch {
@@ -69,12 +63,12 @@ export default function ItemList() {
     }
   };
 
-  const handleAddItem = async () => {
-    if (!newItem.name || !newItem.category || newItem.stock === undefined) {
+  // Add new item
+  const handleAddItem = async (newItem: ItemFormState) => {
+    if (!newItem.name || !newItem.category || newItem.stock < 0) {
       alert("Name, category, and stock are required");
       return;
     }
-
     try {
       const res = await axios.post("/inventory", newItem);
       setItems([...items, res.data.data]);
@@ -85,12 +79,18 @@ export default function ItemList() {
     }
   };
 
+  // Delete item
   const handleDelete = async (id: number) => {
     if (!window.confirm("Delete this item?")) return;
-    await axios.delete(`/inventory/${id}`);
-    setItems(items.filter((it) => it.id !== id));
+    try {
+      await axios.delete(`/inventory/${id}`);
+      setItems(items.filter((it) => it.id !== id));
+    } catch (err: any) {
+      alert(err.response?.data?.message || err.message);
+    }
   };
 
+  // Deposit or withdraw
   const handleTransaction = async () => {
     if (!transactionItem) return;
 
@@ -100,7 +100,6 @@ export default function ItemList() {
     }
 
     try {
-      // ✅ Use deposit/withdraw endpoint matching backend
       const res = await axios.post(
         `/inventory/${transactionItem.id}/${transactionType}`,
         { amount: transactionAmount }
@@ -109,6 +108,9 @@ export default function ItemList() {
       setItems(items.map((it) => (it.id === updatedItem.id ? updatedItem : it)));
       setTransactionItem(null);
       setTransactionAmount(0);
+
+      // Refresh logs for the updated item
+      fetchLogs(updatedItem);
     } catch (err: any) {
       alert(err.response?.data?.message || err.message);
     }
@@ -211,17 +213,13 @@ export default function ItemList() {
           </div>
         </div>
 
-        {/* Add Item Modal */}
-        {showAddModal && (
-          <AddItemModal
-            isOpen={showAddModal}
-            onClose={() => setShowAddModal(false)}
-            onAdd={handleAddItem} // already gets the form data from the modal
-          />
-        )}
+        {/* Modals */}
+        <AddItemModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          onAdd={handleAddItem}
+        />
 
-
-        {/* Transaction Modal */}
         {transactionItem && (
           <TransactionModal
             item={transactionItem}
@@ -233,7 +231,6 @@ export default function ItemList() {
           />
         )}
 
-        {/* Logs Modal */}
         {logItem && (
           <LogsModal
             logs={logs}

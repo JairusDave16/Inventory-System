@@ -27,7 +27,7 @@ export const LogsModal = ({ logs, item, isLoading, onClose }: Props) => {
               <tr>
                 <th>ID</th>
                 <th>Type</th>
-                <th>Stock</th>
+                <th>Amount</th>
                 <th>Date</th>
               </tr>
             </thead>

@@ -2,10 +2,9 @@
 import React, { useState } from "react";
 import { Modal } from "./Modal";
 
-// ✅ Dedicated form state type with required fields
 export interface ItemFormState {
   name: string;
-  category: string; // required
+  category: string;
   stock: number;
   series?: string;
 }
@@ -27,16 +26,12 @@ export const AddItemModal = ({ isOpen, onClose, onAdd }: Props) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation
-    if (!formState.name || !formState.category || isNaN(formState.stock) || formState.stock < 0) {
+    if (!formState.name || !formState.category || formState.stock < 0) {
       alert("Name, category, and stock are required");
       return;
     }
 
-    // Pass valid form state to parent
     onAdd(formState);
-
-    // Reset form
     setFormState({ name: "", category: "", stock: 0, series: "" });
     onClose();
   };
