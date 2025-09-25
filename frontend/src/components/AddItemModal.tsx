@@ -1,56 +1,94 @@
 // src/components/AddItemModal.tsx
-import React from "react";
-import { Item } from "../types/Item";
+import React, { useState } from "react";
 import { Modal } from "./Modal";
 
-interface Props {
-  newItem: Omit<Item, "id">;
-  setNewItem: React.Dispatch<React.SetStateAction<Omit<Item, "id">>>;
-  onAdd: () => void;
-  onClose: () => void;
+// ✅ Dedicated form state type with required fields
+export interface ItemFormState {
+  name: string;
+  category: string; // required
+  stock: number;
+  series?: string;
 }
 
-export const AddItemModal = ({ newItem, setNewItem, onAdd, onClose }: Props) => {
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+  onAdd: (newItem: ItemFormState) => void;
+}
+
+export const AddItemModal = ({ isOpen, onClose, onAdd }: Props) => {
+  const [formState, setFormState] = useState<ItemFormState>({
+    name: "",
+    category: "",
+    stock: 0,
+    series: "",
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validation
+    if (!formState.name || !formState.category || isNaN(formState.stock) || formState.stock < 0) {
+      alert("Name, category, and stock are required");
+      return;
+    }
+
+    // Pass valid form state to parent
+    onAdd(formState);
+
+    // Reset form
+    setFormState({ name: "", category: "", stock: 0, series: "" });
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
   return (
     <Modal title="Add Item" onClose={onClose}>
-      <input
-        type="text"
-        className="form-control mb-2"
-        placeholder="Name"
-        value={newItem.name}
-        onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-      />
-      <input
-        type="text"
-        className="form-control mb-2"
-        placeholder="Category"
-        value={newItem.category}
-        onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-      />
-      <input
-        type="number"
-        className="form-control mb-2"
-        placeholder="Quantity"
-        value={newItem.quantity}
-        onChange={(e) =>
-          setNewItem({ ...newItem, quantity: parseInt(e.target.value) || 0 })
-        }
-      />
-      <input
-        type="text"
-        className="form-control"
-        placeholder="Series"
-        value={newItem.series}
-        onChange={(e) => setNewItem({ ...newItem, series: e.target.value })}
-      />
-      <div className="mt-3 d-flex justify-content-end gap-2">
-        <button className="btn btn-secondary" onClick={onClose}>
-          Cancel
-        </button>
-        <button className="btn btn-primary" onClick={onAdd}>
-          Add
-        </button>
-      </div>
+      <form onSubmit={handleSubmit} className="space-y-2">
+        <input
+          type="text"
+          className="form-control mb-2"
+          placeholder="Name"
+          value={formState.name}
+          onChange={(e) => setFormState({ ...formState, name: e.target.value })}
+          required
+        />
+        <input
+          type="text"
+          className="form-control mb-2"
+          placeholder="Category"
+          value={formState.category}
+          onChange={(e) => setFormState({ ...formState, category: e.target.value })}
+          required
+        />
+        <input
+          type="number"
+          className="form-control mb-2"
+          placeholder="Stock"
+          value={formState.stock}
+          onChange={(e) => {
+            const value = parseInt(e.target.value);
+            setFormState({ ...formState, stock: isNaN(value) ? 0 : value });
+          }}
+          required
+        />
+        <input
+          type="text"
+          className="form-control mb-2"
+          placeholder="Series"
+          value={formState.series || ""}
+          onChange={(e) => setFormState({ ...formState, series: e.target.value })}
+        />
+        <div className="mt-3 d-flex justify-content-end gap-2">
+          <button type="button" className="btn btn-secondary" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" className="btn btn-primary">
+            Add
+          </button>
+        </div>
+      </form>
     </Modal>
   );
 };

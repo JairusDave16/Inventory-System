@@ -11,6 +11,7 @@ export interface Item {
 export interface ItemFormState {
   name: string;
   category?: string;
-  quantity: number;   // ✅ only for form
+  stock: number;   // ✅ now matches backend
   series?: string;
 }
+

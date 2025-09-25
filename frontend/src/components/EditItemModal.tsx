@@ -1,7 +1,7 @@
 // src/components/EditItemModal.tsx
 import { useState, useEffect } from "react";
 import { updateItem } from "../api/items";
-import { Item } from "../types/Item";
+import { Item, ItemFormState } from "../types/Item";
 
 interface EditItemModalProps {
   isOpen: boolean;
@@ -11,17 +11,22 @@ interface EditItemModalProps {
 }
 
 export default function EditItemModal({ isOpen, onClose, item, onSave }: EditItemModalProps) {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [unit, setUnit] = useState("");
-  const [category, setCategory] = useState("");
+  // Use the shared ItemFormState for local form state
+  const [formState, setFormState] = useState<ItemFormState>({
+    name: "",
+    category: "",
+    stock: 0,
+    series: "",
+  });
 
   useEffect(() => {
     if (item) {
-      setName(item.name || "");
-      setDescription(item.description || "");
-      setUnit(item.unit || "");
-      setCategory(item.category || "");
+      setFormState({
+        name: item.name,
+        category: item.category || "",
+        stock: item.stock,
+        series: item.series || "",
+      });
     }
   }, [item]);
 
@@ -30,14 +35,7 @@ export default function EditItemModal({ isOpen, onClose, item, onSave }: EditIte
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const updatedItem = await updateItem(item.id.toString(), {
-  name,
-  description,
-  unit,
-  category,
-});
-
-
+    const updatedItem = await updateItem(item.id.toString(), formState);
     onSave(updatedItem); // notify parent with the updated item
     onClose();
   };
@@ -51,27 +49,9 @@ export default function EditItemModal({ isOpen, onClose, item, onSave }: EditIte
             <label className="block mb-1">Name</label>
             <input
               className="border p-2 w-full"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={formState.name}
+              onChange={(e) => setFormState({ ...formState, name: e.target.value })}
               required
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1">Description</label>
-            <input
-              className="border p-2 w-full"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1">Unit</label>
-            <input
-              className="border p-2 w-full"
-              value={unit}
-              onChange={(e) => setUnit(e.target.value)}
             />
           </div>
 
@@ -79,8 +59,30 @@ export default function EditItemModal({ isOpen, onClose, item, onSave }: EditIte
             <label className="block mb-1">Category</label>
             <input
               className="border p-2 w-full"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              value={formState.category}
+              onChange={(e) => setFormState({ ...formState, category: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1">Stock</label>
+            <input
+              type="number"
+              className="border p-2 w-full"
+              value={formState.stock}
+              onChange={(e) =>
+                setFormState({ ...formState, stock: parseInt(e.target.value) || 0 })
+              }
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1">Series</label>
+            <input
+              className="border p-2 w-full"
+              value={formState.series}
+              onChange={(e) => setFormState({ ...formState, series: e.target.value })}
             />
           </div>
 

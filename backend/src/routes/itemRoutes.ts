@@ -15,14 +15,14 @@ const router = Router();
 function addLog(
   itemId: number,
   type: "deposit" | "withdraw" | "update",
-  quantity: number,
+  stock: number,
   notes?: string
 ) {
   logs.push({
     id: getNextLogId(), // ✅ use helper
     itemId,
     type,
-    quantity,
+    stock,
     notes: notes ?? "",
     date: new Date().toISOString(),
   });
