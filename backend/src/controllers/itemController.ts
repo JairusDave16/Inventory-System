@@ -6,8 +6,8 @@ import {
   depositItem,
   withdrawItem,
   updateItemStock,
-  getLogs,
 } from "../services/itemService";
+import { addLog, getLogs, getLogsByItem } from "../services/logService";
 import { Item } from "../types/Item";
 
 // ✅ Utility for consistent responses
@@ -47,7 +47,7 @@ export const createItem = (req: Request, res: Response) => {
   }
 
   const newItem: Item = {
-    id: Date.now(), // or use a UUID if you prefer
+    id: Date.now(),
     name,
     stock: Number(stock),
     unit,
@@ -56,6 +56,10 @@ export const createItem = (req: Request, res: Response) => {
   };
 
   const added = addItem(newItem);
+
+  // ✅ Log initial stock
+  addLog(added.id, "deposit", added.stock, "Initial stock");
+
   sendResponse(res, 201, true, "Item created successfully", added);
 };
 
@@ -69,8 +73,11 @@ export const depositItemController = (req: Request, res: Response) => {
     return sendResponse(res, 400, false, "Invalid ID or quantity");
   }
 
-  const updated = depositItem(id, quantity, notes);
+  const updated = depositItem(id, quantity);
   if (!updated) return sendResponse(res, 404, false, "Item not found");
+
+  // ✅ Add log
+  addLog(id, "deposit", quantity, notes);
 
   sendResponse(res, 200, true, `Deposited ${quantity} successfully`, updated);
 };
@@ -86,8 +93,12 @@ export const withdrawItemController = (req: Request, res: Response) => {
   }
 
   try {
-    const updated = withdrawItem(id, quantity, notes);
+    const updated = withdrawItem(id, quantity);
     if (!updated) return sendResponse(res, 404, false, "Item not found");
+
+    // ✅ Add log
+    addLog(id, "withdraw", quantity, notes);
+
     sendResponse(res, 200, true, `Withdrew ${quantity} successfully`, updated);
   } catch (err: any) {
     sendResponse(res, 400, false, err.message);
@@ -104,8 +115,11 @@ export const updateItemController = (req: Request, res: Response) => {
     return sendResponse(res, 400, false, "Invalid ID or stock");
   }
 
-  const updated = updateItemStock(id, newStock, notes);
+  const updated = updateItemStock(id, newStock);
   if (!updated) return sendResponse(res, 404, false, "Item not found");
+
+  // ✅ Add log (manual adjustment)
+  addLog(id, "update", newStock, notes || "Manual adjustment");
 
   sendResponse(res, 200, true, "Stock updated successfully", updated);
 };
@@ -115,7 +129,7 @@ export const getItemLogs = (req: Request, res: Response) => {
   const id = Number(req.params.id);
   if (isNaN(id)) return sendResponse(res, 400, false, "Invalid item ID");
 
-  const itemLogs = getLogs().filter((log) => log.itemId === id);
+  const itemLogs = getLogsByItem(id);
   sendResponse(res, 200, true, "Logs retrieved successfully", itemLogs);
 };
 

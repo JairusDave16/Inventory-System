@@ -1,5 +1,5 @@
 // backend/src/services/itemService.ts
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from "uuid";  
 import { Item } from "../types/Item";
 import { Log } from "../types/Log";
 
@@ -9,12 +9,12 @@ let logs: Log[] = [];
 let logId = 1; // global counter
 
 // Utility: add a log entry
-function addLog(itemId: number, type: Log["type"], quantity: number, notes?: string): void {
+function addLog(itemId: number, type: Log["type"], stock: number, notes?: string): void {
   const log: Log = {
     id: logId++, // number, auto-increment
     itemId,      // already number
     type,
-    quantity,
+    stock,
     date: new Date().toISOString(),
     ...(notes ? { notes } : {}), // ✅ only include notes if provided
   };

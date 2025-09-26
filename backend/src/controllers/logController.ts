@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { logService } from "../services/logService";
 
+
 export const logController = {
   getLogsByItem(req: Request, res: Response) {
     const { itemId } = req.params;

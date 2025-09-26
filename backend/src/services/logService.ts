@@ -1,30 +1,26 @@
-// src/services/logService.ts
+// backend/src/services/logService.ts
 import { Log } from "../types/Log";
 
 let logs: Log[] = [];
 let logId = 1;
 
-export const logService = {
-  getAllLogs() {
-    return logs;
-  },
-
-  getLogsByItem(itemId: number) {
-    return logs.filter((log) => log.itemId === itemId);
-  },
-
-addLog(itemId: number, type: "deposit" | "withdraw" | "update", stock: number) {
-  const newLog: Log = {
+export function addLog(itemId: number, type: "deposit" | "withdraw" | "update", stock: number, notes?: string): Log {
+  const log: Log = {
     id: logId++,
     itemId,
-    type,                       
-    stock,                   
+    type,
+    stock,
     date: new Date().toISOString(),
+    ...(notes ? { notes } : {}), // optional notes
   };
+  logs.push(log);
+  return log;
+}
 
-  logs.push(newLog);
-  return newLog;
-},
+export function getLogs(): Log[] {
+  return logs;
+}
 
-
-};
+export function getLogsByItem(itemId: number): Log[] {
+  return logs.filter((log) => log.itemId === itemId);
+}
