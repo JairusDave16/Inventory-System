@@ -1,40 +1,40 @@
+// backend/src/routes/inventoryRoutes.ts
 import { Router } from "express";
 import {
   getAllItems,
   getItemById,
-  getItemsByCategory,
   createItem,
-  updateItem,
-  deleteItem,
-  depositItem,
-  withdrawItem,
-} from "../controllers/inventoryController";
+  depositItemController,
+  withdrawItemController,
+  updateItemController,
+  getItemLogs,
+  deleteItemController,
+} from "../controllers/itemController";
 
 const router = Router();
 
 // GET all items
 router.get("/", getAllItems);
 
-// GET items by category
-router.get("/category/:category", getItemsByCategory);
-
 // GET item by ID
 router.get("/:id", getItemById);
 
-// POST new item
+// CREATE new item
 router.post("/", createItem);
 
-// PUT update item
-router.put("/:id", updateItem);
+// DEPOSIT item
+router.post("/:id/deposit", depositItemController);
+
+// WITHDRAW item
+router.post("/:id/withdraw", withdrawItemController);
+
+// UPDATE stock directly
+router.put("/:id", updateItemController);
+
+// GET logs for an item
+router.get("/:id/logs", getItemLogs);
 
 // DELETE item
-router.delete("/:id", deleteItem);
-
-// POST deposit
-router.post("/:id/deposit", depositItem);
-
-// POST withdraw
-router.post("/:id/withdraw", withdrawItem);
-
+router.delete("/:id", deleteItemController);
 
 export default router;

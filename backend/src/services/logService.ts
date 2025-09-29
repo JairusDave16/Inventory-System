@@ -4,7 +4,12 @@ import { Log } from "../types/Log";
 let logs: Log[] = [];
 let logId = 1;
 
-export function addLog(itemId: number, type: "deposit" | "withdraw" | "update", stock: number, notes?: string): Log {
+export function addLog(
+  itemId: number,
+  type: "deposit" | "withdraw" | "update", // 👈 include update
+  stock: number,
+  notes?: string
+): Log {
   const log: Log = {
     id: logId++,
     itemId,
@@ -24,3 +29,9 @@ export function getLogs(): Log[] {
 export function getLogsByItem(itemId: number): Log[] {
   return logs.filter((log) => log.itemId === itemId);
 }
+
+export const logService = {
+  addLog,
+  getLogs,
+  getLogsByItem,
+};
