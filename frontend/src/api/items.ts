@@ -29,14 +29,17 @@ export const adjustStock = async (
   notes?: string
 ): Promise<Item> => {
   try {
-    const res = await api.post(`/items/${id}/adjust`, { type, quantity, notes });
+    const endpoint = type === "deposit" 
+      ? `/items/${id}/deposit` 
+      : `/items/${id}/withdraw`;
+
+    const res = await api.post(endpoint, { quantity, notes });
     return res.data;
   } catch (error: any) {
-    // Pass along backend error to frontend handler
     throw error.response?.data || error;
   }
 };
-
+  
 
 export const deleteItem = async (id: string) => {
   const res = await api.delete(`/items/${id}`);

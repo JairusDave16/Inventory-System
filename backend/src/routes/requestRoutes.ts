@@ -1,23 +1,27 @@
 import { Router } from "express";
 import {
-  getAllRequests,
-  createRequest,
-  getRequestById,
-  deleteRequest,
-  approveRequest,
-  rejectRequest,   // ✅ new import
+  createRequestController,
+  approveRequestController,
+  fulfillRequestController,
+  getRequestsController,
+  getRequestLogsController,
 } from "../controllers/requestController";
 
 const router = Router();
 
-// 🔹 Routes
-router.get("/", getAllRequests);         // GET /requests
-router.post("/", createRequest);         // POST /requests
-router.get("/:id", getRequestById);      // GET /requests/:id
-router.delete("/:id", deleteRequest);    // DELETE /requests/:id
+// Create request
+router.post("/", createRequestController);
 
-// ✅ Approve / Reject routes
-router.put("/:id/approve", approveRequest);
-router.put("/:id/reject", rejectRequest);
+// Get all requests
+router.get("/", getRequestsController);
+
+// Approve / reject
+router.post("/:id/approve", approveRequestController);
+
+// Fulfill (auto-withdraw inventory)
+router.post("/:id/fulfill", fulfillRequestController);
+
+// Logs
+router.get("/:id/logs", getRequestLogsController);
 
 export default router;

@@ -37,6 +37,6 @@ export const logController = {
   },
 
   getAllLogs(req: Request, res: Response) {
-    res.json(logService.getAllLogs());
+    res.json(logService.getLogs());
   },
 };

@@ -1,10 +1,23 @@
-// frontend/src/types.ts
+// backend/src/types/Request.ts
+
+export interface RequestItem {
+  itemId: number;
+  quantity: number;
+}
 
 export interface Request {
-  id: string;
-  title: string;
-  description: string;
-  status: "pending" | "approved" | "rejected";
+  id: number;
+  user: string;
+  items: RequestItem[];
+  status: "submitted" | "approved" | "rejected" | "fulfilled";
   createdAt: string;
-  updatedAt: string;
+}
+
+export interface RequestLog {
+  id: number;
+  requestId: number;
+  action: "submitted" | "approved" | "rejected" | "fulfilled";
+  user: string;
+  notes?: string;
+  date: string;
 }

@@ -52,7 +52,7 @@ export default function ItemList() {
           id: Number(l.id),
           itemId: Number(l.itemId),
           type: l.type,
-          stock: Number(l.quantity), // standardized stock
+          stock: Number(l.stock), // standardized stock
           date: new Date(l.date).toISOString(), // standardized date
         }))
       );
@@ -91,30 +91,31 @@ export default function ItemList() {
   };
 
   // Deposit or withdraw
-  const handleTransaction = async () => {
-    if (!transactionItem) return;
+const handleTransaction = async () => {
+  if (!transactionItem) return;
 
-    if (transactionType === "withdraw" && transactionAmount > transactionItem.stock) {
-      alert(`Not enough stock. Available: ${transactionItem.stock}`);
-      return;
-    }
+  if (transactionType === "withdraw" && transactionAmount > transactionItem.stock) {
+    alert(`Not enough stock. Available: ${transactionItem.stock}`);
+    return;
+  }
 
-    try {
-      const res = await axios.post(
-        `/inventory/${transactionItem.id}/${transactionType}`,
-        { amount: transactionAmount }
-      );
-      const updatedItem = res.data.data || res.data;
-      setItems(items.map((it) => (it.id === updatedItem.id ? updatedItem : it)));
-      setTransactionItem(null);
-      setTransactionAmount(0);
+  try {
+    const res = await axios.post(
+      `/inventory/${transactionItem.id}/${transactionType}`,
+      { quantity: transactionAmount }  // ✅ changed from "amount" → "quantity"
+    );
+    const updatedItem = res.data.data || res.data;
+    setItems(items.map((it) => (it.id === updatedItem.id ? updatedItem : it)));
+    setTransactionItem(null);
+    setTransactionAmount(0);
 
-      // Refresh logs for the updated item
-      fetchLogs(updatedItem);
-    } catch (err: any) {
-      alert(err.response?.data?.message || err.message);
-    }
-  };
+    // Refresh logs for the updated item
+    fetchLogs(updatedItem);
+  } catch (err: any) {
+    alert(err.response?.data?.message || err.message);
+  }
+};
+
 
   return (
     <Layout>
