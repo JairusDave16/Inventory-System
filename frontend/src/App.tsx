@@ -2,7 +2,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, NavLink } from "react-router-dom";
 import ItemList from "./components/ItemList";
-import RequestsPage from "./components/RequestsPage";
+import RequestList from "./components/RequestList"; // ✅ use RequestList directly
 
 function App() {
   return (
@@ -55,7 +55,7 @@ function App() {
           <div className="container py-4">
             <Routes>
               <Route path="/" element={<ItemList />} />
-              <Route path="/requests" element={<RequestsPage />} />
+              <Route path="/requests" element={<RequestList />} /> {/* ✅ now using RequestList */}
             </Routes>
           </div>
         </main>
