@@ -2,67 +2,56 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, NavLink } from "react-router-dom";
 import ItemList from "./components/ItemList";
-import RequestList from "./components/RequestList"; // ✅ use RequestList directly
+import RequestList from "./components/RequestList";
 
 function App() {
   return (
     <Router>
-      <div className="App d-flex flex-column min-vh-100">
+      <div className="flex flex-col min-h-screen bg-gray-50">
         {/* Navbar */}
-        <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-          <div className="container">
-            <NavLink className="navbar-brand fw-bold" to="/">
-              📦 InventoryApp
+        <nav className="bg-blue-600 text-white shadow-md">
+          <div className="container mx-auto flex items-center justify-between px-4 py-3">
+            <NavLink className="text-lg font-bold flex items-center gap-2" to="/">
+              📦 <span>InventoryApp</span>
             </NavLink>
-            <button
-              className="navbar-toggler"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#navbarNav"
-            >
-              <span className="navbar-toggler-icon"></span>
-            </button>
-
-            <div className="collapse navbar-collapse" id="navbarNav">
-              <ul className="navbar-nav ms-auto">
-                <li className="nav-item">
-                  <NavLink
-                    to="/"
-                    className={({ isActive }) =>
-                      "nav-link" + (isActive ? " active fw-semibold" : "")
-                    }
-                  >
-                    Items
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink
-                    to="/requests"
-                    className={({ isActive }) =>
-                      "nav-link" + (isActive ? " active fw-semibold" : "")
-                    }
-                  >
-                    Requests
-                  </NavLink>
-                </li>
-              </ul>
-            </div>
+            <ul className="flex gap-6">
+              <li>
+                <NavLink
+                  to="/"
+                  className={({ isActive }) =>
+                    `hover:underline ${isActive ? "font-semibold underline" : ""}`
+                  }
+                >
+                  Items
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/requests"
+                  className={({ isActive }) =>
+                    `hover:underline ${isActive ? "font-semibold underline" : ""}`
+                  }
+                >
+                  Requests
+                </NavLink>
+              </li>
+            </ul>
           </div>
         </nav>
 
         {/* Page Content */}
-        <main className="flex-grow-1">
-          <div className="container py-4">
+        <main className="flex-grow">
+          <div className="container mx-auto px-4 py-6">
             <Routes>
               <Route path="/" element={<ItemList />} />
-              <Route path="/requests" element={<RequestList />} /> {/* ✅ now using RequestList */}
+              <Route path="/requests" element={<RequestList />} />
             </Routes>
           </div>
         </main>
 
         {/* Footer */}
-        <footer className="bg-light text-center py-3 mt-auto border-top">
-          <small className="text-muted">© 2025 InventoryApp</small>
+        <footer className="bg-gray-100 border-t text-center py-4">
+          <small className="text-gray-600">© 2025 InventoryApp</small>
         </footer>
       </div>
     </Router>
