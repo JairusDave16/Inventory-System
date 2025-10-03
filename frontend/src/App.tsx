@@ -1,60 +1,14 @@
-// App.tsx
-import React from "react";
-import { BrowserRouter as Router, Routes, Route, NavLink } from "react-router-dom";
-import ItemList from "./components/ItemList";
-import RequestList from "./components/RequestList";
-
 function App() {
   return (
-    <Router>
-      <div className="flex flex-col min-h-screen bg-gray-50">
-        {/* Navbar */}
-        <nav className="bg-blue-600 text-white shadow-md">
-          <div className="container mx-auto flex items-center justify-between px-4 py-3">
-            <NavLink className="text-lg font-bold flex items-center gap-2" to="/">
-              📦 <span>InventoryApp</span>
-            </NavLink>
-            <ul className="flex gap-6">
-              <li>
-                <NavLink
-                  to="/"
-                  className={({ isActive }) =>
-                    `hover:underline ${isActive ? "font-semibold underline" : ""}`
-                  }
-                >
-                  Items
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/requests"
-                  className={({ isActive }) =>
-                    `hover:underline ${isActive ? "font-semibold underline" : ""}`
-                  }
-                >
-                  Requests
-                </NavLink>
-              </li>
-            </ul>
-          </div>
-        </nav>
-
-        {/* Page Content */}
-        <main className="flex-grow">
-          <div className="container mx-auto px-4 py-6">
-            <Routes>
-              <Route path="/" element={<ItemList />} />
-              <Route path="/requests" element={<RequestList />} />
-            </Routes>
-          </div>
-        </main>
-
-        {/* Footer */}
-        <footer className="bg-gray-100 border-t text-center py-4">
-          <small className="text-gray-600">© 2025 InventoryApp</small>
-        </footer>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="bg-white shadow-lg rounded-lg p-8 max-w-md text-center">
+        <h1 className="text-3xl font-bold text-gray-800 mb-4">Welcome to Inventory System</h1>
+        <p className="text-gray-600 mb-6">Tailwind CSS is now working perfectly!</p>
+        <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
+          Get Started
+        </button>
       </div>
-    </Router>
+    </div>
   );
 }
 
