@@ -1,14 +1,25 @@
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Dashboard from "./pages/Dashboard";
+import ItemList from "./components/ItemList";
+import RequestList from "./components/RequestList";
+import NotFound from "./pages/NotFound";
+
 export default function App() {
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-      <div className="text-center text-white">
-        <h1 className="text-5xl font-extrabold mb-4">
-          🎉 Tailwind is working!
-        </h1>
-        <p className="text-lg opacity-90">
-          If you see this gradient background, setup is successful.
-        </p>
+    <Router>
+      <div className="min-h-screen bg-gray-50 text-gray-900">
+        <Navbar />
+        <main className="p-6">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/items" element={<ItemList />} />
+            <Route path="/requests" element={<RequestList />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
       </div>
-    </div>
+    </Router>
   );
 }

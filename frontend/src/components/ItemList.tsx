@@ -1,4 +1,3 @@
-// src/components/ItemList.tsx
 import React, { useState, useEffect } from "react";
 import axios from "../api/axios";
 import { Item } from "../types/Item";
@@ -29,7 +28,6 @@ export default function ItemList() {
     fetchItems();
   }, []);
 
-  // Fetch all items
   const fetchItems = async () => {
     try {
       const res = await axios.get("/inventory");
@@ -39,7 +37,6 @@ export default function ItemList() {
     }
   };
 
-  // Fetch logs for a single item
   const fetchLogs = async (item: Item) => {
     setLogItem(item);
     setIsLogsLoading(true);
@@ -52,8 +49,8 @@ export default function ItemList() {
           id: Number(l.id),
           itemId: Number(l.itemId),
           type: l.type,
-          stock: Number(l.stock), // standardized stock
-          date: new Date(l.date).toISOString(), // standardized date
+          stock: Number(l.stock),
+          date: new Date(l.date).toISOString(),
         }))
       );
     } catch {
@@ -63,7 +60,6 @@ export default function ItemList() {
     }
   };
 
-  // Add new item
   const handleAddItem = async (newItem: ItemFormState) => {
     if (!newItem.name || !newItem.category || newItem.stock < 0) {
       alert("Name, category, and stock are required");
@@ -79,7 +75,6 @@ export default function ItemList() {
     }
   };
 
-  // Delete item
   const handleDelete = async (id: number) => {
     if (!window.confirm("Delete this item?")) return;
     try {
@@ -90,49 +85,51 @@ export default function ItemList() {
     }
   };
 
-  // Deposit or withdraw
-const handleTransaction = async () => {
-  if (!transactionItem) return;
+  const handleTransaction = async () => {
+    if (!transactionItem) return;
 
-  if (transactionType === "withdraw" && transactionAmount > transactionItem.stock) {
-    alert(`Not enough stock. Available: ${transactionItem.stock}`);
-    return;
-  }
+    if (transactionType === "withdraw" && transactionAmount > transactionItem.stock) {
+      alert(`Not enough stock. Available: ${transactionItem.stock}`);
+      return;
+    }
 
-  try {
-    const res = await axios.post(
-      `/inventory/${transactionItem.id}/${transactionType}`,
-      { quantity: transactionAmount }  // ✅ changed from "amount" → "quantity"
-    );
-    const updatedItem = res.data.data || res.data;
-    setItems(items.map((it) => (it.id === updatedItem.id ? updatedItem : it)));
-    setTransactionItem(null);
-    setTransactionAmount(0);
-
-    // Refresh logs for the updated item
-    fetchLogs(updatedItem);
-  } catch (err: any) {
-    alert(err.response?.data?.message || err.message);
-  }
-};
-
+    try {
+      const res = await axios.post(`/inventory/${transactionItem.id}/${transactionType}`, {
+        quantity: transactionAmount,
+      });
+      const updatedItem = res.data.data || res.data;
+      setItems(items.map((it) => (it.id === updatedItem.id ? updatedItem : it)));
+      setTransactionItem(null);
+      setTransactionAmount(0);
+      fetchLogs(updatedItem);
+    } catch (err: any) {
+      alert(err.response?.data?.message || err.message);
+    }
+  };
 
   return (
     <Layout>
-      <div className="container py-4">
+      <div className="p-6 max-w-6xl mx-auto">
         {/* Header */}
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2>📦 Inventory</h2>
-          <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            📦 Inventory
+          </h2>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition"
+          >
             ➕ Add Item
           </button>
         </div>
 
         {/* Filter */}
-        <div className="mb-3">
-          <label className="form-label fw-bold">Filter by Category:</label>
+        <div className="mb-6">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Filter by Category:
+          </label>
           <select
-            className="form-select w-auto"
+            className="border border-gray-300 rounded-lg px-3 py-2 w-60 focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
           >
@@ -145,73 +142,73 @@ const handleTransaction = async () => {
           </select>
         </div>
 
-        {/* Items Table */}
-        <div className="card shadow-sm">
-          <div className="card-body">
-            <table className="table table-hover align-middle">
-              <thead className="table-light">
-                <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Category</th>
-                  <th>Stock</th>
-                  <th>Series</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items
-                  .filter((it) => !filterCategory || it.category === filterCategory)
-                  .map((item) => (
-                    <tr key={item.id}>
-                      <td>{item.id}</td>
-                      <td>{item.name}</td>
-                      <td>
-                        <span className="badge bg-info text-dark">{item.category}</span>
-                      </td>
-                      <td>{item.stock}</td>
-                      <td>{item.series}</td>
-                      <td>
-                        <div className="d-flex gap-2">
-                          <button
-                            className="btn btn-sm btn-outline-primary"
-                            onClick={() => {
-                              setTransactionItem(item);
-                              setTransactionType("deposit");
-                              setTransactionAmount(0);
-                            }}
-                          >
-                            Deposit
-                          </button>
-                          <button
-                            className="btn btn-sm btn-outline-secondary"
-                            onClick={() => {
-                              setTransactionItem(item);
-                              setTransactionType("withdraw");
-                              setTransactionAmount(0);
-                            }}
-                          >
-                            Withdraw
-                          </button>
-                          <button
-                            className="btn btn-sm btn-outline-success"
-                            onClick={() => fetchLogs(item)}
-                          >
-                            Logs
-                          </button>
-                          <button
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={() => handleDelete(item.id)}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
+        {/* Table */}
+        <div className="overflow-x-auto bg-white rounded-xl shadow-md">
+          <table className="w-full border-collapse">
+            <thead className="bg-gray-100 text-gray-700 text-sm uppercase">
+              <tr>
+                <th className="px-4 py-3 text-left">ID</th>
+                <th className="px-4 py-3 text-left">Name</th>
+                <th className="px-4 py-3 text-left">Category</th>
+                <th className="px-4 py-3 text-left">Stock</th>
+                <th className="px-4 py-3 text-left">Series</th>
+                <th className="px-4 py-3 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {items
+                .filter((it) => !filterCategory || it.category === filterCategory)
+                .map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50 transition">
+                    <td className="px-4 py-3">{item.id}</td>
+                    <td className="px-4 py-3 font-medium text-gray-800">{item.name}</td>
+                    <td className="px-4 py-3">
+                      <span className="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded">
+                        {item.category}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">{item.stock}</td>
+                    <td className="px-4 py-3 text-gray-600">{item.series}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-2 flex-wrap">
+                        <button
+                          className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-md hover:bg-green-200 transition"
+                          onClick={() => {
+                            setTransactionItem(item);
+                            setTransactionType("deposit");
+                            setTransactionAmount(0);
+                          }}
+                        >
+                          Deposit
+                        </button>
+                        <button
+                          className="text-sm bg-yellow-100 text-yellow-700 px-3 py-1 rounded-md hover:bg-yellow-200 transition"
+                          onClick={() => {
+                            setTransactionItem(item);
+                            setTransactionType("withdraw");
+                            setTransactionAmount(0);
+                          }}
+                        >
+                          Withdraw
+                        </button>
+                        <button
+                          className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-md hover:bg-blue-200 transition"
+                          onClick={() => fetchLogs(item)}
+                        >
+                          Logs
+                        </button>
+                        <button
+                          className="text-sm bg-red-100 text-red-700 px-3 py-1 rounded-md hover:bg-red-200 transition"
+                          onClick={() => handleDelete(item.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
         </div>
 
         {/* Modals */}
