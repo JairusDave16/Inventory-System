@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "../api/axios";
 import { Item } from "../types/Item";
+import { Plus, FileText, Check, X, Package } from "lucide-react";
 
 type Request = {
   id: number;
@@ -52,14 +53,13 @@ export default function RequestList() {
   };
 
   const fetchItems = async () => {
-  try {
-    const res = await axios.get("/items");
-    setItems(res.data.items || []); // ✅ explicitly grab the array
-  } catch {
-    setItems([]);
-  }
-};
-
+    try {
+      const res = await axios.get("/items");
+      setItems(res.data.items || []);
+    } catch {
+      setItems([]);
+    }
+  };
 
   const fetchLogs = async (id: number) => {
     try {
@@ -127,7 +127,6 @@ export default function RequestList() {
     }
   };
 
-  // Update single item in the request
   const updateItemField = (index: number, field: "itemId" | "quantity", value: string | number) => {
     const updatedItems = [...newRequest.items];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
@@ -139,185 +138,185 @@ export default function RequestList() {
   };
 
   return (
-    <div className="container py-4">
-      <h2>📋 Requests</h2>
+    <div className="p-8 min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+          <FileText className="w-7 h-7 text-blue-600" /> Requests
+        </h1>
+      </div>
 
       {/* New Request Form */}
-      <div className="card p-3 mb-4 shadow-sm">
-        <h5>Create New Request</h5>
-        <div className="row g-2 mb-2">
-          <div className="col-md-3">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="User"
-              value={newRequest.user}
-              onChange={(e) => setNewRequest({ ...newRequest, user: e.target.value })}
-            />
-          </div>
-          <div className="col-md-6">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Notes (optional)"
-              value={newRequest.notes || ""}
-              onChange={(e) => setNewRequest({ ...newRequest, notes: e.target.value })}
-            />
-          </div>
+      <div className="bg-white p-6 rounded-2xl shadow-md mb-8 border border-gray-100">
+        <h2 className="text-lg font-semibold mb-4 text-gray-700">Create New Request</h2>
+
+        <div className="grid md:grid-cols-2 gap-4 mb-4">
+          <input
+            type="text"
+            placeholder="User"
+            value={newRequest.user}
+            onChange={(e) => setNewRequest({ ...newRequest, user: e.target.value })}
+            className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="text"
+            placeholder="Notes (optional)"
+            value={newRequest.notes || ""}
+            onChange={(e) => setNewRequest({ ...newRequest, notes: e.target.value })}
+            className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500"
+          />
         </div>
 
         {newRequest.items.map((it, idx) => (
-          <div key={idx} className="row g-2 mb-2">
-            <div className="col-md-4">
-              <select
-                className="form-select"
-                value={it.itemId || ""}
-                onChange={(e) => updateItemField(idx, "itemId", Number(e.target.value))}
-              >
-                <option value="">Select Item</option>
-                {items.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {i.name} (Stock: {i.stock})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="col-md-3">
-              <input
-                type="number"
-                className="form-control"
-                placeholder="Quantity"
-                value={it.quantity || ""}
-                onChange={(e) => updateItemField(idx, "quantity", Number(e.target.value))}
-              />
-            </div>
+          <div key={idx} className="grid md:grid-cols-2 gap-4 mb-3">
+            <select
+              value={it.itemId || ""}
+              onChange={(e) => updateItemField(idx, "itemId", Number(e.target.value))}
+              className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select Item</option>
+              {items.map((i) => (
+                <option key={i.id} value={i.id}>
+                  {i.name} (Stock: {i.stock})
+                </option>
+              ))}
+            </select>
+            <input
+              type="number"
+              placeholder="Quantity"
+              value={it.quantity || ""}
+              onChange={(e) => updateItemField(idx, "quantity", Number(e.target.value))}
+              className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500"
+            />
           </div>
         ))}
 
-        <div className="row g-2">
-          <div className="col-md-3">
-            <button className="btn btn-outline-secondary w-100" onClick={addItemField}>
-              ➕ Add Item
-            </button>
-          </div>
-          <div className="col-md-3">
-            <button className="btn btn-primary w-100" onClick={handleCreate}>
-              Submit
-            </button>
-          </div>
+        <div className="flex gap-3">
+          <button
+            onClick={addItemField}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
+          >
+            <Plus className="w-4 h-4" /> Add Item
+          </button>
+          <button
+            onClick={handleCreate}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Submit Request
+          </button>
         </div>
       </div>
 
       {/* Requests Table */}
-      <div className="card shadow-sm mb-4">
-        <div className="card-body">
-          <table className="table table-hover align-middle">
-            <thead className="table-light">
-              <tr>
-                <th>ID</th>
-                <th>User</th>
-                <th>Items</th>
-                <th>Notes</th>
-                <th>Status</th>
-                <th>Approver</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {requests.map((r) => (
-                <tr key={r.id}>
-                  <td>{r.id}</td>
-                  <td>{r.user}</td>
-                  <td>
-                    {r.items.map((it, idx) => (
-                      <div key={idx}>
-                        {items.find((i) => i.id === it.itemId)?.name || it.itemId} × {it.quantity}
-                      </div>
-                    ))}
-                  </td>
-                  <td>{r.notes || "-"}</td>
-                  <td>
-                    <span
-                      className={`badge ${
-                        r.status === "approved"
-                          ? "bg-success"
-                          : r.status === "rejected"
-                          ? "bg-danger"
-                          : r.status === "fulfilled"
-                          ? "bg-info"
-                          : "bg-warning text-dark"
-                      }`}
-                    >
-                      {r.status}
-                    </span>
-                  </td>
-                  <td>{r.approver || "-"}</td>
-                  <td>{new Date(r.date).toLocaleString()}</td>
-                  <td>
-                    <div className="d-flex gap-2">
-                      {r.status === "pending" && (
-                        <>
-                          <button
-                            className="btn btn-sm btn-outline-success"
-                            onClick={() => handleApprove(r.id)}
-                          >
-                            Approve
-                          </button>
-                          <button
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={() => handleReject(r.id)}
-                          >
-                            Reject
-                          </button>
-                        </>
-                      )}
-                      {r.status === "approved" && (
-                        <button
-                          className="btn btn-sm btn-outline-primary"
-                          onClick={() => handleFulfill(r.id)}
-                        >
-                          Fulfill
-                        </button>
-                      )}
-                      <button
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={() => fetchLogs(r.id)}
-                      >
-                        Logs
-                      </button>
+      <div className="bg-white rounded-2xl shadow-md border border-gray-100 mb-8 overflow-x-auto">
+        <table className="w-full text-sm text-left">
+          <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
+            <tr>
+              <th className="px-4 py-3">ID</th>
+              <th className="px-4 py-3">User</th>
+              <th className="px-4 py-3">Items</th>
+              <th className="px-4 py-3">Notes</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Approver</th>
+              <th className="px-4 py-3">Date</th>
+              <th className="px-4 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {requests.map((r) => (
+              <tr key={r.id} className="hover:bg-gray-50">
+                <td className="px-4 py-3 font-medium">{r.id}</td>
+                <td className="px-4 py-3">{r.user}</td>
+                <td className="px-4 py-3">
+                  {r.items.map((it, idx) => (
+                    <div key={idx}>
+                      {items.find((i) => i.id === it.itemId)?.name || it.itemId} × {it.quantity}
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  ))}
+                </td>
+                <td className="px-4 py-3">{r.notes || "-"}</td>
+                <td className="px-4 py-3">
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      r.status === "approved"
+                        ? "bg-green-100 text-green-700"
+                        : r.status === "rejected"
+                        ? "bg-red-100 text-red-700"
+                        : r.status === "fulfilled"
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {r.status}
+                  </span>
+                </td>
+                <td className="px-4 py-3">{r.approver || "-"}</td>
+                <td className="px-4 py-3">{new Date(r.date).toLocaleString()}</td>
+                <td className="px-4 py-3">
+                  <div className="flex gap-2 flex-wrap">
+                    {r.status === "pending" && (
+                      <>
+                        <button
+                          onClick={() => handleApprove(r.id)}
+                          className="px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition"
+                        >
+                          <Check className="w-4 h-4 inline mr-1" /> Approve
+                        </button>
+                        <button
+                          onClick={() => handleReject(r.id)}
+                          className="px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition"
+                        >
+                          <X className="w-4 h-4 inline mr-1" /> Reject
+                        </button>
+                      </>
+                    )}
+                    {r.status === "approved" && (
+                      <button
+                        onClick={() => handleFulfill(r.id)}
+                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition"
+                      >
+                        <Package className="w-4 h-4 inline mr-1" /> Fulfill
+                      </button>
+                    )}
+                    <button
+                      onClick={() => fetchLogs(r.id)}
+                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition"
+                    >
+                      Logs
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* Logs Section */}
       {showLogsFor && (
-        <div className="card shadow-sm">
-          <div className="card-body">
-            <h5>Logs for Request #{showLogsFor}</h5>
-            <table className="table table-sm">
-              <thead>
+        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
+          <h3 className="text-lg font-semibold mb-4 text-gray-700">
+            Logs for Request #{showLogsFor}
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
                 <tr>
-                  <th>ID</th>
-                  <th>Action</th>
-                  <th>User</th>
-                  <th>Notes</th>
-                  <th>Date</th>
+                  <th className="px-4 py-2">ID</th>
+                  <th className="px-4 py-2">Action</th>
+                  <th className="px-4 py-2">User</th>
+                  <th className="px-4 py-2">Notes</th>
+                  <th className="px-4 py-2">Date</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-200">
                 {logs.map((log) => (
-                  <tr key={log.id}>
-                    <td>{log.id}</td>
-                    <td>{log.action}</td>
-                    <td>{log.user}</td>
-                    <td>{log.notes || "-"}</td>
-                    <td>{new Date(log.date).toLocaleString()}</td>
+                  <tr key={log.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-2">{log.id}</td>
+                    <td className="px-4 py-2">{log.action}</td>
+                    <td className="px-4 py-2">{log.user}</td>
+                    <td className="px-4 py-2">{log.notes || "-"}</td>
+                    <td className="px-4 py-2">{new Date(log.date).toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
