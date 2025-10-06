@@ -17,7 +17,7 @@ type Request = {
 type RequestLog = {
   id: number;
   requestId: number;
-  action: "submitted" | "approved" | "rejected" | "fulfilled";
+  action: "pending" | "approved" | "rejected" | "fulfilled";
   user: string;
   notes?: string;
   date: string;
@@ -39,27 +39,28 @@ export default function RequestList() {
   });
 
   useEffect(() => {
-    fetchRequests();
-    fetchItems();
-  }, []);
+  axios
+    .get("http://localhost:8888/api/items")
+    .then((res) => {
+      console.log("Fetched items:", res.data.data);
+      setItems(res.data.data);
+    })
+    .catch((err) => console.error("Error fetching items:", err));
+}, []);
+  
 
   const fetchRequests = async () => {
-    try {
-      const res = await axios.get("/requests");
-      setRequests(res.data);
-    } catch {
-      setRequests([]);
-    }
-  };
-
-  const fetchItems = async () => {
-    try {
-      const res = await axios.get("/items");
-      setItems(res.data.items || []);
-    } catch {
-      setItems([]);
-    }
-  };
+  try {
+    const res = await axios.get("/requests");
+    const normalized = res.data.map((r: Request) => ({
+      ...r,
+      status: r.status?.toLowerCase() || "pending",
+    }));
+    setRequests(normalized);
+  } catch {
+    setRequests([]);
+  }
+};
 
   const fetchLogs = async (id: number) => {
     try {
@@ -100,14 +101,18 @@ export default function RequestList() {
     }
   };
 
-  const handleApprove = async (id: number) => {
-    try {
-      await axios.post(`/requests/${id}/approve`, { approver: "Manager" });
-      fetchRequests();
-    } catch (err: any) {
-      alert(err.response?.data?.message || err.message);
-    }
-  };
+  const handleApprove = async (id: number, approve: boolean) => {
+  try {
+    await axios.post(`/requests/${id}/approve`, { 
+      approver: "Manager", 
+      approve, // true = approve, false = reject
+    });
+    fetchRequests();
+  } catch (err: any) {
+    alert(err.response?.data?.message || err.message);
+  }
+};
+
 
   const handleReject = async (id: number) => {
     try {
@@ -257,19 +262,20 @@ export default function RequestList() {
                     {r.status === "pending" && (
                       <>
                         <button
-                          onClick={() => handleApprove(r.id)}
+                          onClick={() => handleApprove(r.id, true)}
                           className="px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition"
                         >
                           <Check className="w-4 h-4 inline mr-1" /> Approve
                         </button>
                         <button
-                          onClick={() => handleReject(r.id)}
+                          onClick={() => handleApprove(r.id, false)}
                           className="px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition"
                         >
                           <X className="w-4 h-4 inline mr-1" /> Reject
                         </button>
                       </>
                     )}
+                    
                     {r.status === "approved" && (
                       <button
                         onClick={() => handleFulfill(r.id)}

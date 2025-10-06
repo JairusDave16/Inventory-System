@@ -13,7 +13,7 @@ export function createRequest(user: string, items: RequestItem[], notes?: string
     id: requestId++,
     user,
     items,
-    status: "submitted",
+    status: "pending",
     createdAt: new Date().toISOString(),
   };
   requests.push(req);
@@ -21,7 +21,7 @@ export function createRequest(user: string, items: RequestItem[], notes?: string
   const log: RequestLog = {
     id: logId++,
     requestId: req.id,
-    action: "submitted",
+    action: "pending",
     user,
     date: new Date().toISOString(),
     ...(notes !== undefined ? { notes } : {}),

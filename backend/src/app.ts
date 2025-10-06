@@ -5,7 +5,9 @@ import logRoutes from "./routes/logRoutes";
 import requestRoutes from "./routes/requestRoutes";
 import itemRoutes from "./routes/itemRoutes"; // ✅ import itemRoutes
 import seriesRoutes from "./routes/seriesRoutes";
+import { connectDB } from "./db";
 
+connectDB();
 
 const app = express();
 
