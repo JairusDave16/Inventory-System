@@ -7,12 +7,12 @@ export const logs: Log[] = [];
 // simple auto-increment for id
 let nextLogId = 1;
 
-export function addLog(itemId: number, type: Log["type"], quantity: number, notes?: string): Log {
+export function addLog(itemId: number, type: Log["type"], stock: number, notes?: string): Log {
   const log: Log = {
     id: nextLogId++,
     itemId,
     type,
-    quantity,
+    stock,
     date: new Date().toISOString(),
     ...(notes !== undefined ? { notes } : {}), // ✅ only include if provided
   };

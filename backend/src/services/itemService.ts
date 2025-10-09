@@ -1,75 +1,116 @@
 // backend/src/services/itemService.ts
-import { v4 as uuidv4 } from "uuid";  
-import { Item } from "../types/Item";
-import { Log } from "../types/Log";
+import { PrismaClient } from "@prisma/client";
 
-// In-memory storage (replace later with DB or JSON persistence)
-let items: Item[] = [];
-let logs: Log[] = [];
-let logId = 1; // global counter
+const prisma = new PrismaClient();
 
-// Utility: add a log entry
-function addLog(itemId: number, type: Log["type"], stock: number, notes?: string): void {
-  const log: Log = {
-    id: logId++, // number, auto-increment
-    itemId,      // already number
-    type,
-    stock,
-    date: new Date().toISOString(),
-    ...(notes ? { notes } : {}), // ✅ only include notes if provided
-  };
-  logs.push(log);
+// 🟩 Get all items
+export async function getItems() {
+  return prisma.item.findMany({
+    orderBy: { createdAt: "desc" },
+  });
 }
 
+// 🟩 Add a new item
+export async function addItem(name: string, stock: number, unit?: string, description?: string, category?: string) {
+  const item = await prisma.item.create({
+    data: {
+      name,
+      stock,
+      unit,
+      description,
+      category,
+    },
+  });
 
-// Get all items
-export function getItems(): Item[] {
-  return items;
-}
+  // Log the initial stock
+  await prisma.requestLog.create({
+    data: {
+      requestId: 0, // 0 means system log (not tied to request)
+      action: "deposit",
+      user: "System",
+      notes: `Initial stock: ${stock}`,
+    },
+  });
 
-// Add a new item
-export function addItem(item: Item): Item {
-  items.push(item);
-  addLog(item.id, "deposit", item.stock, "Initial stock");
   return item;
 }
 
-// Deposit stock
-export function depositItem(itemId: number, quantity: number, notes?: string): Item | null {
-  const item = items.find(i => i.id === itemId);
+// 🟩 Deposit stock
+export async function depositItem(itemId: number, quantity: number, notes?: string) {
+  const item = await prisma.item.findUnique({ where: { id: itemId } });
   if (!item) return null;
 
-  const q = Number(quantity);
-  item.stock += q;
-  addLog(item.id, "deposit", q, notes);
-  console.log(`Deposited ${q} to ${item.name}, new stock: ${item.stock}`);
-  return item;
+  const updated = await prisma.item.update({
+    where: { id: itemId },
+    data: { stock: item.stock + quantity },
+  });
+
+  await prisma.requestLog.create({
+    data: {
+      requestId: 0,
+      action: "deposit",
+      user: "System",
+      notes: notes || `Deposited ${quantity} to ${item.name}`,
+    },
+  });
+
+  console.log(`Deposited ${quantity} to ${item.name}, new stock: ${updated.stock}`);
+  return updated;
 }
 
-export function withdrawItem(itemId: number, quantity: number, notes?: string): Item | null {
-  const item = items.find(i => i.id === itemId);
+// 🟩 Withdraw stock
+export async function withdrawItem(itemId: number, quantity: number, notes?: string) {
+  const item = await prisma.item.findUnique({ where: { id: itemId } });
   if (!item) return null;
 
-  const q = Number(quantity);
-  if (item.stock < q) throw new Error("Not enough stock");
+  if (item.stock < quantity) throw new Error("Not enough stock");
 
-  item.stock -= q;
-  addLog(item.id, "withdraw", q, notes);
-  console.log(`Withdrew ${q} from ${item.name}, new stock: ${item.stock}`);
-  return item;
+  const updated = await prisma.item.update({
+    where: { id: itemId },
+    data: { stock: item.stock - quantity },
+  });
+
+  await prisma.requestLog.create({
+    data: {
+      requestId: 0,
+      action: "withdraw",
+      user: "System",
+      notes: notes || `Withdrew ${quantity} from ${item.name}`,
+    },
+  });
+
+  console.log(`Withdrew ${quantity} from ${item.name}, new stock: ${updated.stock}`);
+  return updated;
 }
 
-export function updateItemStock(itemId: number, newStock: number, notes?: string): Item | null {
-  const item = items.find(i => i.id === itemId);
+// 🟩 Update stock manually
+export async function updateItemStock(itemId: number, newStock: number, notes?: string) {
+  const item = await prisma.item.findUnique({ where: { id: itemId } });
   if (!item) return null;
 
   const diff = newStock - item.stock;
-  item.stock = newStock;
-  addLog(item.id, "update", diff, notes || "Manual adjustment");
-  return item;
+
+  const updated = await prisma.item.update({
+    where: { id: itemId },
+    data: { stock: newStock },
+  });
+
+  await prisma.requestLog.create({
+    data: {
+      requestId: 0,
+      action: "update",
+      user: "System",
+      notes: notes || `Manual adjustment: ${diff >= 0 ? "+" : ""}${diff}`,
+    },
+  });
+
+  console.log(`Adjusted ${item.name} stock by ${diff}, new stock: ${updated.stock}`);
+  return updated;
 }
 
-// Get logs
-export function getLogs(): Log[] {
-  return logs;
+// 🟩 Get all logs
+export async function getLogs() {
+  return prisma.requestLog.findMany({
+    orderBy: { date: "desc" },
+  });
 }

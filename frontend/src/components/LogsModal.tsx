@@ -9,6 +9,7 @@ interface Props {
   item: Item;
   isLoading: boolean;
   onClose: () => void;
+  
 }
 
 export const LogsModal = ({ logs, item, isLoading, onClose }: Props) => {

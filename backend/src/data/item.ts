@@ -18,14 +18,14 @@ export function nextItemId(): number {
 export function addLog(
   itemId: number,
   type: "deposit" | "withdraw" | "update",
-  quantity: number,
+  stock: number,
   notes?: string
 ) {
   logs.push({
     id: logIdCounter++,
     itemId,
     type,
-    quantity,
+    stock,
     notes: notes ?? "",
     date: new Date().toISOString(),
   });

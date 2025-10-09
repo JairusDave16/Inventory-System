@@ -1,0 +1,96 @@
+// -----------------------------
+// Prisma Configuration
+// -----------------------------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------
+// Models
+// -----------------------------
+
+model Item {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  stock       Int       @default(0)
+  unit        String?
+  category    String?
+  deletedAt   DateTime?
+
+  requests Request[]
+  logs     ItemLog[]
+
+  series Series[] // ✅ Add this line for the opposite relation
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+
+  requests Request[] @relation("UserRequests")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Request {
+  id       Int     @id @default(autoincrement())
+  userId   Int
+  itemId   Int
+  quantity Int
+  status   String  @default("pending")
+  notes    String?
+  approver String?
+
+  user User         @relation("UserRequests", fields: [userId], references: [id])
+  item Item         @relation(fields: [itemId], references: [id])
+  logs RequestLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RequestLog {
+  id        Int      @id @default(autoincrement())
+  requestId Int
+  action    String
+  user      String
+  notes     String?
+  date      DateTime @default(now())
+
+  request Request @relation(fields: [requestId], references: [id])
+}
+
+model ItemLog {
+  id       Int      @id @default(autoincrement())
+  itemId   Int
+  action   String // e.g. 'deposit', 'withdraw', 'update'
+  quantity Int
+  notes    String?
+  date     DateTime @default(now())
+
+  item Item @relation(fields: [itemId], references: [id])
+}
+
+model Series {
+  id        Int      @id @default(autoincrement())
+  itemId    Int
+  from      Int
+  to        Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  item Item @relation(fields: [itemId], references: [id])
+}

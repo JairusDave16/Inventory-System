@@ -1,87 +1,132 @@
 // backend/src/services/requestService.ts
-import { Request, RequestItem, RequestLog } from "../types/request";
-import { withdrawItem } from "./itemService"; // already working
+import prisma from "../prismaClient";
 
-let requests: Request[] = [];
-let requestLogs: RequestLog[] = [];
-let requestId = 1;
-let logId = 1;
+// -----------------------------
+// Create a new request
+// -----------------------------
+export async function createRequest(
+  userId: number,
+  itemId: number,
+  quantity: number,
+  notes: string
+) {
+  // Ensure user exists
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new Error("User not found");
 
-// Create a request
-export function createRequest(user: string, items: RequestItem[], notes?: string): Request {
-  const req: Request = {
-    id: requestId++,
-    user,
-    items,
-    status: "pending",
-    createdAt: new Date().toISOString(),
-  };
-  requests.push(req);
+  // Ensure item exists
+  const item = await prisma.item.findUnique({ where: { id: itemId } });
+  if (!item) throw new Error("Item not found");
 
-  const log: RequestLog = {
-    id: logId++,
-    requestId: req.id,
-    action: "pending",
-    user,
-    date: new Date().toISOString(),
-    ...(notes !== undefined ? { notes } : {}),
-  };
-  requestLogs.push(log);
+  // Create request
+  const request = await prisma.request.create({
+    data: {
+      userId,
+      itemId,
+      quantity,
+      status: "pending",
+      notes,
+    },
+  });
 
-  return req;
+  // Create initial log
+  await prisma.requestLog.create({
+    data: {
+      requestId: request.id,
+      action: "Created",
+      user: user.name,
+      notes: notes || "Request created",
+    },
+  });
+
+  return request;
 }
 
+// -----------------------------
 // Approve or reject a request
-export function approveRequest(id: number, approver: string, approve: boolean, notes?: string): Request | null {
-  const req = requests.find(r => r.id === id);
-  if (!req) return null;
+// -----------------------------
+export async function approveRequest(
+  requestId: number,
+  approver: string,
+  approve: boolean,
+  notes: string
+) {
+  const request = await prisma.request.findUnique({ where: { id: requestId } });
+  if (!request) return null;
 
-  req.status = approve ? "approved" : "rejected";
+  const updatedRequest = await prisma.request.update({
+    where: { id: requestId },
+    data: {
+      status: approve ? "approved" : "rejected",
+      approver,
+    },
+  });
 
-  const log: RequestLog = {
-    id: logId++,
-    requestId: req.id,
-    action: approve ? "approved" : "rejected",
-    user: approver,
-    date: new Date().toISOString(),
-    ...(notes !== undefined ? { notes } : {}),
-  };
-  requestLogs.push(log);
+  await prisma.requestLog.create({
+    data: {
+      requestId,
+      action: approve ? "Approved" : "Rejected",
+      user: approver,
+      notes,
+    },
+  });
 
-  return req;
+  return updatedRequest;
 }
 
-// Fulfill request (auto-withdraw)
-export function fulfillRequest(id: number, actor: string, notes?: string): Request | null {
-  const req = requests.find(r => r.id === id);
-  if (!req || req.status !== "approved") return null;
+// -----------------------------
+// Fulfill request (withdraw stock)
+// -----------------------------
+export async function fulfillRequest(
+  requestId: number,
+  actor: string,
+  notes: string
+) {
+  const request = await prisma.request.findUnique({ where: { id: requestId } });
+  if (!request || request.status !== "approved") return null;
 
-  // Try withdrawing stock for each item
-  for (const item of req.items) {
-    withdrawItem(item.itemId, item.quantity, `Request #${req.id}`);
-  }
+  const item = await prisma.item.findUnique({ where: { id: request.itemId } });
+  if (!item) throw new Error("Item not found");
+  if (item.stock < request.quantity) throw new Error("Insufficient stock");
 
-  req.status = "fulfilled";
+  const [updatedItem, updatedRequest] = await prisma.$transaction([
+    prisma.item.update({
+      where: { id: item.id },
+      data: { stock: { decrement: request.quantity } },
+    }),
+    prisma.request.update({
+      where: { id: requestId },
+      data: { status: "fulfilled" },
+    }),
+  ]);
 
-  const log: RequestLog = {
-    id: logId++,
-    requestId: req.id,
-    action: "fulfilled",
-    user: actor,
-    date: new Date().toISOString(),
-    ...(notes !== undefined ? { notes } : {}),
-  };
-  requestLogs.push(log);
+  await prisma.requestLog.create({
+    data: {
+      requestId,
+      action: "Fulfilled",
+      user: actor,
+      notes: notes || `Fulfilled ${request.quantity} units`,
+    },
+  });
 
-  return req;
+  return { request: updatedRequest, item: updatedItem };
 }
 
-// Fetch requests
-export function getRequests(): Request[] {
-  return requests;
+// -----------------------------
+// Get all requests
+// -----------------------------
+export async function getRequests() {
+  return prisma.request.findMany({
+    include: { user: true, item: true },
+  });
 }
 
-// Fetch logs for a request
-export function getRequestLogs(id: number): RequestLog[] {
-  return requestLogs.filter(l => l.requestId === id);
+// -----------------------------
+// Get logs for a specific request
+// -----------------------------
+export async function getRequestLogs(requestId: number) {
+  return prisma.requestLog.findMany({
+    where: { requestId },
+    orderBy: { date: "asc" },
+  });
 }

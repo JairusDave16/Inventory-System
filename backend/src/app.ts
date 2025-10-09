@@ -1,41 +1,29 @@
 import express from "express";
 import cors from "cors";
-import inventoryRoutes from "./routes/inventoryRoutes";
 import logRoutes from "./routes/logRoutes";
 import requestRoutes from "./routes/requestRoutes";
-import itemRoutes from "./routes/itemRoutes"; // ✅ import itemRoutes
+import itemRoutes from "./routes/itemRoutes";
 import seriesRoutes from "./routes/seriesRoutes";
-import { connectDB } from "./db";
-
-connectDB();
 
 const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:3000", // allow your frontend
+    origin: "http://localhost:3000", // allow frontend
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );
+
 app.use(express.json());
 
-// Base route
+// 🏠 Base route
 app.get("/", (_req, res) => res.send("Inventory System API 🚀"));
 
-// Inventory routes
-app.use("/api/inventory", inventoryRoutes);
-
-// Items routes ✅
+// 🔹 Routes
 app.use("/api/items", itemRoutes);
-
-// Logs API
 app.use("/api/logs", logRoutes);
-
-// Requests routes
 app.use("/api/requests", requestRoutes);
-
-// Series routes
 app.use("/api/series", seriesRoutes);
 
 export default app;

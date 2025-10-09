@@ -9,19 +9,19 @@ import {
 
 const router = Router();
 
-// Create request
-router.post("/", createRequestController);
-
-// Get all requests
+// 🟩 Get all requests
 router.get("/", getRequestsController);
 
-// Approve / reject
-router.post("/:id/approve", approveRequestController);
+// 🟩 Create a new request
+router.post("/", createRequestController);
 
-// Fulfill (auto-withdraw inventory)
-router.post("/:id/fulfill", fulfillRequestController);
+// 🟩 Approve or reject a request
+router.put("/:id/approve", approveRequestController);
 
-// Logs
+// 🟩 Fulfill (withdraw inventory automatically)
+router.put("/:id/fulfill", fulfillRequestController);
+
+// 🟩 Get logs for a specific request
 router.get("/:id/logs", getRequestLogsController);
 
 export default router;

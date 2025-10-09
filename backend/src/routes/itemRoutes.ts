@@ -6,24 +6,18 @@ import {
   depositItemController,
   withdrawItemController,
   updateItemController,
-  getItemLogs,
   deleteItemController,
 } from "../controllers/itemController";
 
 const router = Router();
 
-// Items
-router.get("/", getAllItems);
-router.get("/:id", getItemById);
-router.post("/", createItem);
-router.put("/:id", updateItemController);
-router.delete("/:id", deleteItemController);
-
-// Stock ops
-router.post("/:id/deposit", depositItemController);
-router.post("/:id/withdraw", withdrawItemController);
-
-// Logs
-router.get("/:id/logs", getItemLogs);
+// 📦 ITEM ROUTES
+router.get("/", getAllItems);             // GET all items
+router.get("/:id", getItemById);          // GET single item
+router.post("/", createItem);             // CREATE new item
+router.put("/:id/deposit", depositItemController);  // DEPOSIT stock
+router.put("/:id/withdraw", withdrawItemController); // WITHDRAW stock
+router.put("/:id", updateItemController); // UPDATE stock directly
+router.delete("/:id", deleteItemController); // DELETE item
 
 export default router;

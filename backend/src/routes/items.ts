@@ -15,14 +15,14 @@ let logIdCounter = 1;  // auto-increment for logs
 function addLog(
   itemId: number,
   type: "deposit" | "withdraw" | "update",
-  quantity: number,
+  stock: number,
   notes?: string
 ) {
   logs.push({
     id: logIdCounter++, // number
     itemId,             // number
     type,
-    quantity,
+    stock,
     notes: notes ?? "",
     date: new Date().toISOString(),
   });
