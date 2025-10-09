@@ -2,7 +2,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 // 1️⃣ Define the interface for TypeScript
-export interface IRequest extends Document {
+export interface Request extends Document {
   userId: number;
   itemId: number;
   quantity: number;
@@ -14,7 +14,7 @@ export interface IRequest extends Document {
 }
 
 // 2️⃣ Define the schema
-const RequestSchema = new Schema<IRequest>({
+const RequestSchema = new Schema<Request>({
   userId: { type: Number, required: true },
   itemId: { type: Number, required: true },
   quantity: { type: Number, required: true },
@@ -36,6 +36,6 @@ RequestSchema.pre("save", function (next) {
 });
 
 // 4️⃣ Export model
-const RequestModel = mongoose.model<IRequest>("Request", RequestSchema);
+const RequestModel = mongoose.model<Request>("Request", RequestSchema);
 
 export default RequestModel;

@@ -2,11 +2,11 @@
 import { Prisma } from "@prisma/client";
 import prisma from "../prismaClient";
 
-
 // =============================
 // ITEMS
 // =============================
 export const getAllItems = () => prisma.item.findMany();
+
 export const getItemById = (id: number) =>
   prisma.item.findUnique({ where: { id } });
 
@@ -32,16 +32,27 @@ export const createLog = (data: {
   user: string;
   notes?: string;
   requestId?: number;
-}) => prisma.requestLog.create({ data });
+}) =>
+  prisma.requestLog.create({
+    data: {
+      ...data,
+      notes: data.notes ?? null, // ✅ Normalize undefined → null
+    },
+  });
 
 // =============================
 // REQUESTS
 // =============================
 export const getAllRequests = () =>
-  prisma.request.findMany({ include: { logs: true, item: true, user: true } });
+  prisma.request.findMany({
+    include: { logs: true, item: true, user: true },
+  });
 
 export const getRequestById = (id: number) =>
-  prisma.request.findUnique({ where: { id }, include: { logs: true, item: true, user: true } });
+  prisma.request.findUnique({
+    where: { id },
+    include: { logs: true, item: true, user: true },
+  });
 
 export const createRequest = (data: {
   userId: number;
@@ -58,7 +69,7 @@ export const createRequest = (data: {
           {
             action: "pending",
             user: `User #${data.userId}`,
-            notes: data.notes ?? null, // ✅ convert undefined to null
+            notes: data.notes ?? null,
           },
         ],
       },
@@ -67,49 +78,158 @@ export const createRequest = (data: {
   });
 
 // =============================
-// SERIES
+// SERIES (Series-based Deposits / Withdrawals)
 // =============================
 
-// Get all series
-export const getAllSeries = () => prisma.series.findMany({
-  include: { item: true }, // optional: include the related item
-});
-
-// Get series by item
-export const getSeriesByItem = (itemId: number) =>
-  prisma.series.findMany({
-    where: { itemId },
-    orderBy: { from: "asc" }, // optional, useful for range tracking
-  });
-
-// Create a new series range
-export const createSeries = (data: {
+/**
+ * Create a new series (deposit or withdraw)
+ * - Automatically adjusts item stock
+ * - Logs action in ItemLog
+ * - Prevents overlapping series ranges
+ */
+export async function createSeriesWithStock(data: {
   itemId: number;
-  from: number;
-  to: number;
-}) => {
-  // Optional: validate that 'to' is greater than or equal to 'from'
-  if (data.to < data.from) {
-    throw new Error("'to' series number must be greater than or equal to 'from'");
+  fromSeries: number | string;
+  toSeries: number | string;
+  quantity: number;
+  type: "deposit" | "withdraw";
+}) {
+  // ✅ Force conversion to string immediately
+  const fromSeriesStr = String(data.fromSeries); // ⬅ changed
+  const toSeriesStr = String(data.toSeries);     // ⬅ changed
+
+  // ✅ Use numeric comparison for validation only
+  const fromNum = Number(fromSeriesStr);
+  const toNum = Number(toSeriesStr);
+  if (!isNaN(fromNum) && !isNaN(toNum) && toNum < fromNum) {
+    throw new Error("'toSeries' must be greater than or equal to 'fromSeries'");
   }
 
-  const prismaData: Prisma.SeriesCreateInput = {
-    item: { connect: { id: data.itemId } },
-    from: data.from,
-    to: data.to,
-  };
+  return await prisma.$transaction(async (tx) => {
+    // 1️⃣ Prevent overlapping series ranges for the same item
+    const overlap = await tx.series.findFirst({
+      where: {
+        itemId: data.itemId,
+        OR: [
+          {
+            fromSeries: { lte: toSeriesStr },
+            toSeries: { gte: fromSeriesStr },
+          },
+        ],
+      },
+    });
 
-  return prisma.series.create({ data: prismaData });
+    if (overlap) {
+      throw new Error(
+        `❌ Overlapping range detected (${fromSeriesStr}–${toSeriesStr}).`
+      );
+    }
+
+    // 2️⃣ Validate the item exists
+    const currentItem = await tx.item.findUnique({
+      where: { id: data.itemId },
+    });
+    if (!currentItem) throw new Error("❌ Item not found.");
+
+    // 3️⃣ Validate stock availability for withdrawals
+    if (data.type === "withdraw" && currentItem.stock < data.quantity) {
+      throw new Error("❌ Not enough stock to withdraw that quantity.");
+    }
+
+    // 4️⃣ Create the series entry (preserves exact formatting)
+    const series = await tx.series.create({
+      data: {
+        itemId: data.itemId,
+        fromSeries: fromSeriesStr, // ✅ always string
+        toSeries: toSeriesStr,     // ✅ always string
+        quantity: data.quantity,
+        type: data.type,
+      },
+    });
+
+    // 5️⃣ Adjust stock (increase or decrease)
+    const item = await tx.item.update({
+      where: { id: data.itemId },
+      data: {
+        stock: {
+          increment: data.type === "deposit" ? data.quantity : -data.quantity,
+        },
+      },
+    });
+
+    // 6️⃣ Log entry with preserved format
+    await tx.itemLog.create({
+      data: {
+        itemId: data.itemId,
+        action: data.type,
+        quantity: data.quantity,
+        notes:
+          data.type === "deposit"
+            ? `Deposited series ${fromSeriesStr}–${toSeriesStr}`
+            : `Withdrew series ${fromSeriesStr}–${toSeriesStr}`,
+      },
+    });
+
+    return { series, item };
+  });
+}
+
+
+// =============================
+// SERIES UTILITIES
+// =============================
+
+export const getAllSeries = () => {
+  return prisma.series.findMany({
+    include: { item: true },
+    orderBy: { id: "desc" },
+  });
 };
 
-// Optional: check available numbers in a series
-export const getAvailableNumbersInSeries = async (itemId: number) => {
-  const series = await prisma.series.findMany({ where: { itemId } });
-  const available: number[] = [];
-  series.forEach(s => {
-    for (let n = s.from; n <= s.to; n++) {
-      available.push(n);
-    }
+export const getSeriesByItem = (itemId: number) => {
+  return prisma.series.findMany({
+    where: { itemId },
+    include: { item: true },
+    orderBy: { id: "desc" },
   });
-  return available;
+};
+
+export const deleteSeries = async (seriesId: number) => {
+  return await prisma.$transaction(async (tx) => {
+    // 1️⃣ Find the series entry
+    const series = await tx.series.findUnique({ where: { id: seriesId } });
+    if (!series) throw new Error("❌ Series not found.");
+
+    // 2️⃣ Find the related item
+    const item = await tx.item.findUnique({ where: { id: series.itemId } });
+    if (!item) throw new Error("❌ Related item not found.");
+
+    // 3️⃣ Reverse stock adjustment (deposit ➜ subtract, withdraw ➜ add)
+    const adjustment =
+      series.type === "deposit" ? -series.quantity : series.quantity;
+
+    await tx.item.update({
+      where: { id: series.itemId },
+      data: {
+        stock: { increment: adjustment },
+      },
+    });
+
+    // 4️⃣ Delete the series record
+    await tx.series.delete({ where: { id: seriesId } });
+
+    // 5️⃣ Log the deletion (preserve original formatting)
+    await tx.itemLog.create({
+      data: {
+        itemId: series.itemId,
+        action: "delete-series",
+        quantity: series.quantity,
+        notes: `🗑️ Removed ${series.type} series ${series.fromSeries}–${series.toSeries}`,
+      },
+    });
+
+    return {
+      message: `✅ Series (${series.fromSeries}–${series.toSeries}) deleted and stock adjusted.`,
+    };
+  });
 };

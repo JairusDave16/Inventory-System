@@ -5,9 +5,18 @@ interface ModalProps {
   children: ReactNode;
   onClose: () => void;
   size?: "sm" | "md" | "lg";
+  isOpen?: boolean; // ✅ Add this prop
 }
 
-export const Modal = ({ title, children, onClose, size = "md" }: ModalProps) => {
+export const Modal = ({
+  title,
+  children,
+  onClose,
+  size = "md",
+  isOpen = true, // ✅ Default to true
+}: ModalProps) => {
+  if (!isOpen) return null; // hide modal if false
+
   const sizeClass =
     size === "sm"
       ? "max-w-sm"

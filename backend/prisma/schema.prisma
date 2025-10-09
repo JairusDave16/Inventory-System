@@ -26,8 +26,7 @@ model Item {
 
   requests Request[]
   logs     ItemLog[]
-
-  series Series[] // ✅ Add this line for the opposite relation
+  series   Series[] // ✅ Opposite relation (1 Item → many Series)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -85,12 +84,13 @@ model ItemLog {
 }
 
 model Series {
-  id        Int      @id @default(autoincrement())
-  itemId    Int
-  from      Int
-  to        Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  itemId      Int
+  fromSeries  String
+  toSeries    String
+  quantity    Int
+  type        String
+  createdAt   DateTime @default(now())
 
-  item Item @relation(fields: [itemId], references: [id])
+  item        Item     @relation(fields: [itemId], references: [id])
 }
