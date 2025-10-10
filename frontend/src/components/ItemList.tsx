@@ -6,17 +6,25 @@ import Layout from "./Layout";
 import { LogsModal } from "./LogsModal";
 import { TransactionModal } from "./TransactionModal";
 import { AddItemModal, ItemFormState } from "./AddItemModal";
+import { SeriesTransactionModal } from "./SeriesTransactionModal"; // ✅ Import SeriesTransactionModal
 
 export default function ItemList() {
   const [items, setItems] = useState<Item[]>([]);
   const [logs, setLogs] = useState<Log[]>([]);
   const [filterCategory, setFilterCategory] = useState<string>("");
   const [showAddModal, setShowAddModal] = useState(false);
+
   const [transactionItem, setTransactionItem] = useState<Item | null>(null);
   const [transactionType, setTransactionType] = useState<"deposit" | "withdraw">("deposit");
   const [transactionAmount, setTransactionAmount] = useState<number>(0);
+
   const [logItem, setLogItem] = useState<Item | null>(null);
   const [isLogsLoading, setIsLogsLoading] = useState(false);
+
+  // Series transaction state
+  const [seriesModalItem, setSeriesModalItem] = useState<Item | null>(null);
+  const [seriesType, setSeriesType] = useState<"deposit" | "withdraw">("deposit");
+
   const [newItem, setNewItem] = useState<ItemFormState>({
     name: "",
     category: "",
@@ -30,7 +38,7 @@ export default function ItemList() {
 
   const fetchItems = async () => {
     try {
-      const res = await axios.get("/inventory");
+      const res = await axios.get("/items");
       setItems(Array.isArray(res.data.data) ? res.data.data : []);
     } catch {
       setItems([]);
@@ -42,7 +50,7 @@ export default function ItemList() {
     setIsLogsLoading(true);
     setLogs([]);
     try {
-      const res = await axios.get(`/inventory/${item.id}/logs`);
+      const res = await axios.get(`/items/${item.id}/logs`);
       const rawLogs = res.data.data || res.data;
       setLogs(
         rawLogs.map((l: any) => ({
@@ -66,7 +74,7 @@ export default function ItemList() {
       return;
     }
     try {
-      const res = await axios.post("/inventory", newItem);
+      const res = await axios.post("/items", newItem);
       setItems([...items, res.data.data]);
       setNewItem({ name: "", category: "", stock: 0, series: "" });
       setShowAddModal(false);
@@ -78,7 +86,7 @@ export default function ItemList() {
   const handleDelete = async (id: number) => {
     if (!window.confirm("Delete this item?")) return;
     try {
-      await axios.delete(`/inventory/${id}`);
+      await axios.delete(`/items/${id}`);
       setItems(items.filter((it) => it.id !== id));
     } catch (err: any) {
       alert(err.response?.data?.message || err.message);
@@ -94,7 +102,8 @@ export default function ItemList() {
     }
 
     try {
-      const res = await axios.post(`/inventory/${transactionItem.id}/${transactionType}`, {
+      const res = await axios.post(`/items/${transactionItem.id}/adjust`, {
+        type: transactionType,
         quantity: transactionAmount,
       });
       const updatedItem = res.data.data || res.data;
@@ -105,6 +114,12 @@ export default function ItemList() {
     } catch (err: any) {
       alert(err.response?.data?.message || err.message);
     }
+  };
+
+  const handleSeriesSuccess = () => {
+    // Refresh the inventory list after a series deposit/withdraw
+    fetchItems();
+    setSeriesModalItem(null);
   };
 
   return (
@@ -171,6 +186,7 @@ export default function ItemList() {
                     <td className="px-4 py-3 text-gray-600">{item.series}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2 flex-wrap">
+                        {/* Normal transactions */}
                         <button
                           className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-md hover:bg-green-200 transition"
                           onClick={() => {
@@ -191,6 +207,27 @@ export default function ItemList() {
                         >
                           Withdraw
                         </button>
+
+                        {/* Series transactions */}
+                        <button
+                          className="text-sm bg-green-200 text-green-800 px-3 py-1 rounded-md hover:bg-green-300 transition"
+                          onClick={() => {
+                            setSeriesModalItem(item);
+                            setSeriesType("deposit");
+                          }}
+                        >
+                          Deposit Series
+                        </button>
+                        <button
+                          className="text-sm bg-yellow-200 text-yellow-800 px-3 py-1 rounded-md hover:bg-yellow-300 transition"
+                          onClick={() => {
+                            setSeriesModalItem(item);
+                            setSeriesType("withdraw");
+                          }}
+                        >
+                          Withdraw Series
+                        </button>
+
                         <button
                           className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-md hover:bg-blue-200 transition"
                           onClick={() => fetchLogs(item)}
@@ -238,6 +275,15 @@ export default function ItemList() {
               setLogItem(null);
               setLogs([]);
             }}
+          />
+        )}
+
+        {seriesModalItem && (
+          <SeriesTransactionModal
+            item={seriesModalItem}
+            type={seriesType}
+            onClose={() => setSeriesModalItem(null)}
+            onSuccess={handleSeriesSuccess}
           />
         )}
       </div>

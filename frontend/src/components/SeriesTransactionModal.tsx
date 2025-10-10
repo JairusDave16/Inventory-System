@@ -7,12 +7,11 @@ import { depositSeries, withdrawSeries } from "../api/series";
 interface Props {
   item: Item;
   type: "deposit" | "withdraw";
-  isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
 }
 
-export const SeriesTransactionModal = ({ item, type, isOpen, onClose, onSuccess }: Props) => {
+export const SeriesTransactionModal = ({ item, type, onClose, onSuccess }: Props) => {
   const [fromSeries, setFromSeries] = useState("");
   const [toSeries, setToSeries] = useState("");
   const [quantity, setQuantity] = useState<number | "">("");
@@ -27,7 +26,19 @@ export const SeriesTransactionModal = ({ item, type, isOpen, onClose, onSuccess 
       return;
     }
 
-    const qty = quantity || Number(toSeries) - Number(fromSeries) + 1;
+    const fromNum = Number(fromSeries);
+    const toNum = Number(toSeries);
+    if (isNaN(fromNum) || isNaN(toNum)) {
+      setError("Series must be valid numbers.");
+      return;
+    }
+
+    if (fromNum > toNum) {
+      setError("From Series cannot be greater than To Series.");
+      return;
+    }
+
+    const qty = quantity !== "" ? quantity : toNum - fromNum + 1;
     if (qty <= 0) {
       setError("Invalid quantity calculated from series range.");
       return;
@@ -58,53 +69,66 @@ export const SeriesTransactionModal = ({ item, type, isOpen, onClose, onSuccess 
 
       if (onSuccess) onSuccess();
       onClose();
-    } catch (err: any) {
-      setError(err.response?.data?.error || err.message || "Failed to process series transaction.");
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+      else setError("Failed to process series transaction.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Modal title={`${type === "deposit" ? "Deposit" : "Withdraw"} Series - ${item.name}`} onClose={onClose} size="md" isOpen={isOpen}>
-      {error && <div className="alert alert-danger">{error}</div>}
+    <Modal
+      title={`${type === "deposit" ? "Deposit" : "Withdraw"} Series - ${item.name}`}
+      onClose={onClose}
+      size="md"
+    >
+      {error && <div className="alert alert-danger mb-3">{error}</div>}
 
       <div className="space-y-3">
         <div>
-          <label>From Series</label>
+          <label className="block text-sm font-medium mb-1">From Series</label>
           <input
             type="text"
             value={fromSeries}
             onChange={(e) => setFromSeries(e.target.value)}
             className="w-full border rounded px-3 py-2"
             placeholder="e.g., 00001"
+            disabled={loading}
           />
         </div>
 
         <div>
-          <label>To Series</label>
+          <label className="block text-sm font-medium mb-1">To Series</label>
           <input
             type="text"
             value={toSeries}
             onChange={(e) => setToSeries(e.target.value)}
             className="w-full border rounded px-3 py-2"
             placeholder="e.g., 00010"
+            disabled={loading}
           />
         </div>
 
         <div>
-          <label>Quantity (optional)</label>
+          <label className="block text-sm font-medium mb-1">Quantity (optional)</label>
           <input
             type="number"
+            step={1}
             value={quantity}
             onChange={(e) => setQuantity(e.target.value === "" ? "" : Number(e.target.value))}
             className="w-full border rounded px-3 py-2"
             placeholder="Auto-calculated from series range"
+            disabled={loading}
           />
         </div>
 
         <div className="flex justify-end gap-2 pt-3">
-          <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+            disabled={loading}
+          >
             Cancel
           </button>
           <button
