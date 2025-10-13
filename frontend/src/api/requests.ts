@@ -37,3 +37,15 @@ export const rejectRequest = async (id: number): Promise<Request> => {
   const res = await api.put(`/requests/${id}/reject`);
   return res.data;
 };
+
+// Bulk approve requests
+export const bulkApproveRequests = async (ids: number[], approver?: string, notes?: string) => {
+  const res = await api.put("/requests/bulk/approve", { ids, approver, notes });
+  return res.data;
+};
+
+// Bulk reject requests
+export const bulkRejectRequests = async (ids: number[], approver?: string, notes?: string) => {
+  const res = await api.put("/requests/bulk/reject", { ids, approver, notes });
+  return res.data;
+};

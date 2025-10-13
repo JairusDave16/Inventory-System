@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Item } from "../types/Item";
 import { Log } from "../types/Log";
 import Layout from "./Layout";
@@ -6,9 +6,9 @@ import { LogsModal } from "./LogsModal";
 import { TransactionModal } from "./TransactionModal";
 import { AddItemModal, ItemFormState } from "./AddItemModal";
 import { SeriesTransactionModal } from "./SeriesTransactionModal";
-import EditItemModal from "./EditItemModal";
-import { getItems, getItemLogs, createItem, adjustStock, deleteItem } from "../api/items";
-import { Search, Plus, Edit, Trash2, Package, TrendingUp, TrendingDown, BarChart3, Filter } from "lucide-react";
+import { getItems, getItemLogs, createItem, adjustStock, deleteItem, bulkDeleteItems } from "../api/items";
+import { Search, Plus, Trash2, Package, TrendingUp, TrendingDown, BarChart3, Filter } from "lucide-react";
+import toast from 'react-hot-toast';
 
 export default function ItemList() {
   const [items, setItems] = useState<Item[]>([]);
@@ -19,6 +19,7 @@ export default function ItemList() {
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
   const [transactionItem, setTransactionItem] = useState<Item | null>(null);
   const [transactionType, setTransactionType] = useState<"deposit" | "withdraw">("deposit");
@@ -72,7 +73,7 @@ export default function ItemList() {
 
   const handleAddItem = useCallback(async (newItem: ItemFormState) => {
     if (!newItem.name || !newItem.category || newItem.stock < 0) {
-      alert("Name, category, and stock are required");
+      toast.error("Name, category, and stock are required");
       return;
     }
     try {
@@ -80,8 +81,9 @@ export default function ItemList() {
       setItems([...items, createdItem]);
       setNewItem({ name: "", category: "", stock: 0, series: "" });
       setShowAddModal(false);
+      toast.success("Item created successfully");
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message);
+      toast.error(err.response?.data?.message || err.message);
     }
   }, [items]);
 
@@ -90,8 +92,9 @@ export default function ItemList() {
     try {
       await deleteItem(id.toString());
       setItems(items.filter((it) => it.id !== id));
+      toast.success("Item deleted successfully");
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message);
+      toast.error(err.response?.data?.message || err.message);
     }
   }, [items]);
 
@@ -120,6 +123,18 @@ export default function ItemList() {
     setSeriesModalItem(null);
   };
 
+  const handleBulkDelete = useCallback(async () => {
+    if (!window.confirm(`Delete ${selectedItems.length} selected items?`)) return;
+    try {
+      await bulkDeleteItems(selectedItems);
+      setItems(items.filter((item) => !selectedItems.includes(item.id)));
+      setSelectedItems([]);
+      toast.success(`${selectedItems.length} items deleted successfully`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || err.message);
+    }
+  }, [selectedItems, items]);
+
   return (
     <Layout>
       <div className="p-6 max-w-6xl mx-auto">
@@ -129,13 +144,24 @@ export default function ItemList() {
             <Package className="w-8 h-8" />
             Inventory Management
           </h2>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Add Item
-          </button>
+          <div className="flex gap-2">
+            {selectedItems.length > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete Selected ({selectedItems.length})
+              </button>
+            )}
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add Item
+            </button>
+          </div>
         </div>
 
         {/* Filter */}
@@ -162,6 +188,20 @@ export default function ItemList() {
           <table className="w-full border-collapse">
             <thead className="bg-gray-100 text-gray-700 text-sm uppercase">
               <tr>
+                <th className="px-4 py-3 text-left">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.length === items.filter(it => !filterCategory || it.category === filterCategory).length && selectedItems.length > 0}
+                    onChange={(e) => {
+                      const filteredItems = items.filter(it => !filterCategory || it.category === filterCategory);
+                      if (e.target.checked) {
+                        setSelectedItems(filteredItems.map(item => item.id));
+                      } else {
+                        setSelectedItems([]);
+                      }
+                    }}
+                  />
+                </th>
                 <th className="px-4 py-3 text-left">ID</th>
                 <th className="px-4 py-3 text-left">Name</th>
                 <th className="px-4 py-3 text-left">Category</th>
@@ -175,6 +215,19 @@ export default function ItemList() {
                 .filter((it) => !filterCategory || it.category === filterCategory)
                 .map((item) => (
                   <tr key={item.id} className="hover:bg-gray-50 transition">
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedItems.includes(item.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedItems([...selectedItems, item.id]);
+                          } else {
+                            setSelectedItems(selectedItems.filter(id => id !== item.id));
+                          }
+                        }}
+                      />
+                    </td>
                     <td className="px-4 py-3">{item.id}</td>
                     <td className="px-4 py-3 font-medium text-gray-800">{item.name}</td>
                     <td className="px-4 py-3">

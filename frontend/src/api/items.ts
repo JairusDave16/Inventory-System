@@ -49,3 +49,9 @@ export const deleteItem = async (id: string) => {
   const res = await api.delete(`/items/${id}`);
   return res.data;
 };
+
+// 🗑️ Bulk delete items
+export const bulkDeleteItems = async (ids: number[]) => {
+  const res = await api.delete("/items/bulk", { data: { ids } });
+  return res.data;
+};

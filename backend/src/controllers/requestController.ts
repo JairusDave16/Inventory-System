@@ -195,3 +195,115 @@ export const getRequestLogsController = async (req: Request, res: Response) => {
     sendResponse(res, 500, false, "Failed to fetch logs", error);
   }
 };
+
+// -----------------------------
+// Bulk approve requests
+// -----------------------------
+export const bulkApproveRequestsController = async (req: Request, res: Response) => {
+  try {
+    const { ids, approver, notes } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return sendResponse(res, 400, false, "IDs array is required and cannot be empty");
+    }
+
+    const invalidIds = ids.filter(id => isNaN(Number(id)));
+    if (invalidIds.length > 0) {
+      return sendResponse(res, 400, false, "All IDs must be valid numbers");
+    }
+
+    const numericIds = ids.map(id => Number(id));
+
+    // Check if all requests are pending
+    const requests = await prisma.request.findMany({
+      where: { id: { in: numericIds } }
+    });
+
+    const nonPendingRequests = requests.filter(r => r.status !== "pending");
+    if (nonPendingRequests.length > 0) {
+      return sendResponse(res, 400, false, "All selected requests must be in pending status");
+    }
+
+    // Bulk update requests to approved
+    await prisma.request.updateMany({
+      where: { id: { in: numericIds } },
+      data: {
+        status: "approved",
+        approver: approver || "System",
+      },
+    });
+
+    // Create logs for each request
+    const logsData = numericIds.map(id => ({
+      requestId: id,
+      action: "Approved",
+      user: approver || "System",
+      notes: notes || "Bulk approved",
+    }));
+
+    await prisma.requestLog.createMany({
+      data: logsData,
+    });
+
+    sendResponse(res, 200, true, `${numericIds.length} requests approved successfully`);
+  } catch (error) {
+    console.error("❌ bulkApproveRequestsController error:", error);
+    sendResponse(res, 500, false, "Failed to bulk approve requests", error);
+  }
+};
+
+// -----------------------------
+// Bulk reject requests
+// -----------------------------
+export const bulkRejectRequestsController = async (req: Request, res: Response) => {
+  try {
+    const { ids, approver, notes } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return sendResponse(res, 400, false, "IDs array is required and cannot be empty");
+    }
+
+    const invalidIds = ids.filter(id => isNaN(Number(id)));
+    if (invalidIds.length > 0) {
+      return sendResponse(res, 400, false, "All IDs must be valid numbers");
+    }
+
+    const numericIds = ids.map(id => Number(id));
+
+    // Check if all requests are pending
+    const requests = await prisma.request.findMany({
+      where: { id: { in: numericIds } }
+    });
+
+    const nonPendingRequests = requests.filter(r => r.status !== "pending");
+    if (nonPendingRequests.length > 0) {
+      return sendResponse(res, 400, false, "All selected requests must be in pending status");
+    }
+
+    // Bulk update requests
+    await prisma.request.updateMany({
+      where: { id: { in: numericIds } },
+      data: {
+        status: "rejected",
+        approver: approver || "System",
+      },
+    });
+
+    // Create logs for each request
+    const logsData = numericIds.map(id => ({
+      requestId: id,
+      action: "Rejected",
+      user: approver || "System",
+      notes: notes || "Bulk rejected",
+    }));
+
+    await prisma.requestLog.createMany({
+      data: logsData,
+    });
+
+    sendResponse(res, 200, true, `${numericIds.length} requests rejected successfully`);
+  } catch (error) {
+    console.error("❌ bulkRejectRequestsController error:", error);
+    sendResponse(res, 500, false, "Failed to bulk reject requests", error);
+  }
+};

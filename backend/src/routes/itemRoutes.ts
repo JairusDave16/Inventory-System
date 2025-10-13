@@ -7,6 +7,7 @@ import {
   withdrawItemController,
   updateItemController,
   deleteItemController,
+  bulkDeleteItemsController,
 } from "../controllers/itemController";
 
 const router = Router();
@@ -19,5 +20,6 @@ router.put("/:id/deposit", depositItemController);  // DEPOSIT stock
 router.put("/:id/withdraw", withdrawItemController); // WITHDRAW stock
 router.put("/:id", updateItemController); // UPDATE stock directly
 router.delete("/:id", deleteItemController); // DELETE item
+router.delete("/bulk", bulkDeleteItemsController); // BULK DELETE items
 
 export default router;

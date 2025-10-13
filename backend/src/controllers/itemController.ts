@@ -189,3 +189,27 @@ export const deleteItemController = async (req: Request, res: Response) => {
     sendResponse(res, 500, false, "Failed to delete item", err);
   }
 };
+
+// Bulk delete items
+export const bulkDeleteItemsController = async (req: Request, res: Response) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return sendResponse(res, 400, false, "IDs array is required and cannot be empty");
+  }
+
+  const invalidIds = ids.filter(id => isNaN(Number(id)));
+  if (invalidIds.length > 0) {
+    return sendResponse(res, 400, false, "All IDs must be valid numbers");
+  }
+
+  try {
+    const numericIds = ids.map(id => Number(id));
+    await prisma.item.updateMany({
+      where: { id: { in: numericIds } },
+      data: { deletedAt: new Date() }
+    });
+    sendResponse(res, 200, true, `${numericIds.length} items soft-deleted successfully`);
+  } catch (err) {
+    sendResponse(res, 500, false, "Failed to bulk delete items", err);
+  }
+};

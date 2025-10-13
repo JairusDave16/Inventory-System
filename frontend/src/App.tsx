@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from 'react-hot-toast';
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
 import ItemList from "./components/ItemList";
@@ -39,6 +40,7 @@ export default function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gray-50 text-gray-900">
+        <Toaster position="top-right" />
         {isAuthenticated && <Navbar onLogout={handleLogout} user={user} />}
         <main className="p-6">
           <Routes>
