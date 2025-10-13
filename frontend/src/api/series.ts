@@ -10,18 +10,18 @@ interface SeriesPayload {
 
 // Deposit series
 export const depositSeries = async (payload: SeriesPayload) => {
-  const res = await axios.post("/api/series", { ...payload, type: "deposit" });
+  const res = await axios.post("/series", { ...payload, type: "deposit" });
   return res.data;
 };
 
 // Withdraw series
 export const withdrawSeries = async (payload: SeriesPayload) => {
-  const res = await axios.post("/api/series", { ...payload, type: "withdraw" });
+  const res = await axios.post("/series", { ...payload, type: "withdraw" });
   return res.data;
 };
 
 // Get series for a specific item
 export const getSeriesByItem = async (itemId: number) => {
-  const res = await axios.get(`/api/series/item/${itemId}`);
+  const res = await axios.get(`/series/item/${itemId}`);
   return res.data;
 };
