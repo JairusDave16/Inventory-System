@@ -1,20 +1,16 @@
-# TODO: Implement JWT-based Authentication and Authorization
+# Dashboard Enhancement TODO
 
-## Backend Updates
-- [x] Update `backend/prisma/seed.ts` to hash the test user's password using bcrypt.
-- [x] Create `backend/src/controllers/authController.ts` with register and login logic.
-- [x] Create `backend/src/routes/authRoutes.ts` for `/auth/register` and `/auth/login` endpoints.
-- [x] Create `backend/src/middleware/auth.ts` for JWT verification middleware.
-- [x] Update `backend/src/app.ts` to include auth routes and apply auth middleware to protected endpoints.
+## Backend Changes
+- [x] Create backend/src/controllers/dashboardController.ts with getDashboardStats function
+- [x] Create backend/src/routes/dashboardRoutes.ts with protected /stats route
+- [x] Edit backend/src/app.ts to mount dashboardRoutes at /api/dashboard
 
-## Frontend Updates
-- [x] Update `frontend/src/api/axios.ts` to include Authorization header with JWT token.
-- [x] Update `frontend/src/App.tsx` to manage auth state and conditionally render components.
-- [x] Create `frontend/src/components/Login.tsx` for login form.
-- [x] Create `frontend/src/components/Register.tsx` for register form.
+## Frontend Changes
+- [x] Create frontend/src/api/dashboard.ts with getDashboardStats API function
+- [x] Edit frontend/src/types/index.ts to add DashboardStats and Activity interfaces
+- [x] Edit frontend/src/pages/Dashboard.tsx to fetch and display stats, recent activities, and quick actions
 
 ## Testing and Followup
-- [x] Run `prisma db seed` to update the test user's password.
-- [x] Test auth endpoints (register/login).
-- [x] Test full auth flow on frontend.
-- [x] Apply auth middleware to additional protected routes as needed.
+- [x] Run backend and frontend dev servers
+- [x] Test dashboard: Verify stats display, recent activities list, quick action buttons, and authentication
+- [ ] Optional: Install Recharts for charts if needed (npm install recharts in frontend)

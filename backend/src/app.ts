@@ -5,6 +5,7 @@ import requestRoutes from "./routes/requestRoutes";
 import itemRoutes from "./routes/itemRoutes";
 import seriesRoutes from "./routes/seriesRoutes";
 import authRoutes from "./routes/authRoutes";
+import dashboardRoutes from "./routes/dashboardRoutes";
 import { authenticateToken } from "./middleware/auth";
 
 const app = express();
@@ -30,5 +31,6 @@ app.use("/api/items", authenticateToken, itemRoutes);
 app.use("/api/logs", authenticateToken, logRoutes);
 app.use("/api/requests", authenticateToken, requestRoutes);
 app.use("/api/series", authenticateToken, seriesRoutes);
+app.use("/api/dashboard", authenticateToken, dashboardRoutes);
 
 export default app;
