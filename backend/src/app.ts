@@ -4,6 +4,8 @@ import logRoutes from "./routes/logRoutes";
 import requestRoutes from "./routes/requestRoutes";
 import itemRoutes from "./routes/itemRoutes";
 import seriesRoutes from "./routes/seriesRoutes";
+import authRoutes from "./routes/authRoutes";
+import { authenticateToken } from "./middleware/auth";
 
 const app = express();
 
@@ -20,10 +22,13 @@ app.use(express.json());
 // 🏠 Base route
 app.get("/", (_req, res) => res.send("Inventory System API 🚀"));
 
-// 🔹 Routes
-app.use("/api/items", itemRoutes);
-app.use("/api/logs", logRoutes);
-app.use("/api/requests", requestRoutes);
-app.use("/api/series", seriesRoutes);
+// 🔹 Auth routes (public)
+app.use("/api/auth", authRoutes);
+
+// 🔹 Protected routes (require authentication)
+app.use("/api/items", authenticateToken, itemRoutes);
+app.use("/api/logs", authenticateToken, logRoutes);
+app.use("/api/requests", authenticateToken, requestRoutes);
+app.use("/api/series", authenticateToken, seriesRoutes);
 
 export default app;

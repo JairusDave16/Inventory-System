@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "../api/axios";
 import { Item } from "../types/Item";
-import { Plus, FileText, Check, X, Package } from "lucide-react";
+import { FileText, Check, X, Package } from "lucide-react";
 
 type Request = {
   id: number;
@@ -44,20 +44,24 @@ export default function RequestList() {
   });
 
   useEffect(() => {
-  axios
-    .get("http://localhost:8888/api/items")
-    .then((res) => {
-      console.log("Fetched items:", res.data.data);
-      setItems(res.data.data);
-    })
-    .catch((err) => console.error("Error fetching items:", err));
-}, []);
+    // Fetch items
+    axios
+      .get("/items")
+      .then((res) => {
+        console.log("Fetched items:", res.data.data);
+        setItems(res.data.data);
+      })
+      .catch((err) => console.error("Error fetching items:", err));
+
+    // Fetch requests
+    fetchRequests();
+  }, []);
   
 
   const fetchRequests = async () => {
   try {
     const res = await axios.get("/requests");
-    const normalized = res.data.map((r: Request) => ({
+    const normalized = res.data.data.map((r: Request) => ({
       ...r,
       status: r.status?.toLowerCase() || "pending",
     }));
@@ -103,7 +107,7 @@ export default function RequestList() {
   };
 
   const handleApprove = async (id: number, approve: boolean) => {
-    if (!confirm(approve ? "Approve this request?" : "Reject this request?")) return;
+    if (!window.confirm(approve ? "Approve this request?" : "Reject this request?")) return;
     try {
       await axios.put(`/requests/${id}/approve`, {
         approve,
@@ -117,7 +121,7 @@ export default function RequestList() {
   };
 
   const handleFulfill = async (id: number) => {
-    if (!confirm("Fulfill this request? This will deduct from inventory.")) return;
+    if (!window.confirm("Fulfill this request? This will deduct from inventory.")) return;
     try {
       await axios.put(`/requests/${id}/fulfill`, { actor: "Manager", notes: "" });
       fetchRequests();
