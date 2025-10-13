@@ -106,23 +106,25 @@ export async function createSeriesWithStock(data: {
   }
 
   return await prisma.$transaction(async (tx) => {
-    // 1️⃣ Prevent overlapping series ranges for the same item
-    const overlap = await tx.series.findFirst({
-      where: {
-        itemId: data.itemId,
-        OR: [
-          {
-            fromSeries: { lte: toSeriesStr },
-            toSeries: { gte: fromSeriesStr },
-          },
-        ],
-      },
-    });
+    // 1️⃣ Prevent overlapping series ranges for deposits only (allow withdrawals from deposited ranges)
+    if (data.type === "deposit") {
+      const overlap = await tx.series.findFirst({
+        where: {
+          itemId: data.itemId,
+          OR: [
+            {
+              fromSeries: { lte: toSeriesStr },
+              toSeries: { gte: fromSeriesStr },
+            },
+          ],
+        },
+      });
 
-    if (overlap) {
-      throw new Error(
-        `❌ Overlapping range detected (${fromSeriesStr}–${toSeriesStr}).`
-      );
+      if (overlap) {
+        throw new Error(
+          `❌ Overlapping range detected (${fromSeriesStr}–${toSeriesStr}).`
+        );
+      }
     }
 
     // 2️⃣ Validate the item exists

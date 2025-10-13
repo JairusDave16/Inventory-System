@@ -6,12 +6,14 @@ import { Plus, FileText, Check, X, Package } from "lucide-react";
 
 type Request = {
   id: number;
-  user: string;
-  items: { itemId: number; quantity: number }[];
+  userId: number;
+  itemId: number;
+  quantity: number;
   notes?: string;
   approver?: string;
   status: "pending" | "approved" | "rejected" | "fulfilled";
-  date: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 type RequestLog = {
@@ -29,13 +31,16 @@ export default function RequestList() {
   const [logs, setLogs] = useState<RequestLog[]>([]);
   const [showLogsFor, setShowLogsFor] = useState<number | null>(null);
 
-  const [newRequest, setNewRequest] = useState<Request>({
-    id: 0,
-    user: "",
-    items: [{ itemId: 0, quantity: 0 }],
+  const [newRequest, setNewRequest] = useState<{
+    userId: number;
+    itemId: number;
+    quantity: number;
+    notes?: string;
+  }>({
+    userId: 0,
+    itemId: 0,
+    quantity: 0,
     notes: "",
-    status: "pending",
-    date: new Date().toISOString(),
   });
 
   useEffect(() => {
@@ -74,26 +79,22 @@ export default function RequestList() {
   };
 
   const handleCreate = async () => {
-    if (!newRequest.user || newRequest.items.length === 0 || newRequest.items[0].quantity <= 0) {
+    if (!newRequest.userId || !newRequest.itemId || newRequest.quantity <= 0) {
       alert("Fill out all fields");
       return;
     }
     try {
       await axios.post("/requests", {
-        user: newRequest.user,
-        items: newRequest.items.map((it) => ({
-          itemId: Number(it.itemId),
-          quantity: Number(it.quantity),
-        })),
+        userId: newRequest.userId,
+        itemId: newRequest.itemId,
+        quantity: newRequest.quantity,
         notes: newRequest.notes,
       });
       setNewRequest({
-        id: 0,
-        user: "",
-        items: [{ itemId: 0, quantity: 0 }],
+        userId: 0,
+        itemId: 0,
+        quantity: 0,
         notes: "",
-        status: "pending",
-        date: new Date().toISOString(),
       });
       fetchRequests();
     } catch (err: any) {
@@ -102,21 +103,13 @@ export default function RequestList() {
   };
 
   const handleApprove = async (id: number, approve: boolean) => {
-  try {
-    await axios.post(`/requests/${id}/approve`, { 
-      approver: "Manager", 
-      approve, // true = approve, false = reject
-    });
-    fetchRequests();
-  } catch (err: any) {
-    alert(err.response?.data?.message || err.message);
-  }
-};
-
-
-  const handleReject = async (id: number) => {
+    if (!confirm(approve ? "Approve this request?" : "Reject this request?")) return;
     try {
-      await axios.post(`/requests/${id}/reject`, { approver: "Manager" });
+      await axios.put(`/requests/${id}/approve`, {
+        approve,
+        approver: "Manager",
+        notes: "",
+      });
       fetchRequests();
     } catch (err: any) {
       alert(err.response?.data?.message || err.message);
@@ -124,22 +117,13 @@ export default function RequestList() {
   };
 
   const handleFulfill = async (id: number) => {
+    if (!confirm("Fulfill this request? This will deduct from inventory.")) return;
     try {
-      await axios.post(`/requests/${id}/fulfill`, { actor: "Manager" });
+      await axios.put(`/requests/${id}/fulfill`, { actor: "Manager", notes: "" });
       fetchRequests();
     } catch (err: any) {
       alert(err.response?.data?.message || err.message);
     }
-  };
-
-  const updateItemField = (index: number, field: "itemId" | "quantity", value: string | number) => {
-    const updatedItems = [...newRequest.items];
-    updatedItems[index] = { ...updatedItems[index], [field]: value };
-    setNewRequest({ ...newRequest, items: updatedItems });
-  };
-
-  const addItemField = () => {
-    setNewRequest({ ...newRequest, items: [...newRequest.items, { itemId: 0, quantity: 0 }] });
   };
 
   return (
@@ -157,10 +141,10 @@ export default function RequestList() {
 
         <div className="grid md:grid-cols-2 gap-4 mb-4">
           <input
-            type="text"
-            placeholder="User"
-            value={newRequest.user}
-            onChange={(e) => setNewRequest({ ...newRequest, user: e.target.value })}
+            type="number"
+            placeholder="User ID"
+            value={newRequest.userId || ""}
+            onChange={(e) => setNewRequest({ ...newRequest, userId: Number(e.target.value) })}
             className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500"
           />
           <input
@@ -172,44 +156,34 @@ export default function RequestList() {
           />
         </div>
 
-        {newRequest.items.map((it, idx) => (
-          <div key={idx} className="grid md:grid-cols-2 gap-4 mb-3">
-            <select
-              value={it.itemId || ""}
-              onChange={(e) => updateItemField(idx, "itemId", Number(e.target.value))}
-              className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select Item</option>
-              {items.map((i) => (
-                <option key={i.id} value={i.id}>
-                  {i.name} (Stock: {i.stock})
-                </option>
-              ))}
-            </select>
-            <input
-              type="number"
-              placeholder="Quantity"
-              value={it.quantity || ""}
-              onChange={(e) => updateItemField(idx, "quantity", Number(e.target.value))}
-              className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        ))}
-
-        <div className="flex gap-3">
-          <button
-            onClick={addItemField}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
+        <div className="grid md:grid-cols-2 gap-4 mb-4">
+          <select
+            value={newRequest.itemId || ""}
+            onChange={(e) => setNewRequest({ ...newRequest, itemId: Number(e.target.value) })}
+            className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500"
           >
-            <Plus className="w-4 h-4" /> Add Item
-          </button>
-          <button
-            onClick={handleCreate}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-          >
-            Submit Request
-          </button>
+            <option value="">Select Item</option>
+            {items.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.name} (Stock: {i.stock})
+              </option>
+            ))}
+          </select>
+          <input
+            type="number"
+            placeholder="Quantity"
+            value={newRequest.quantity || ""}
+            onChange={(e) => setNewRequest({ ...newRequest, quantity: Number(e.target.value) })}
+            className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500"
+          />
         </div>
+
+        <button
+          onClick={handleCreate}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+        >
+          Submit Request
+        </button>
       </div>
 
       {/* Requests Table */}
@@ -231,13 +205,9 @@ export default function RequestList() {
             {requests.map((r) => (
               <tr key={r.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium">{r.id}</td>
-                <td className="px-4 py-3">{r.user}</td>
+                <td className="px-4 py-3">{r.userId}</td>
                 <td className="px-4 py-3">
-                  {r.items.map((it, idx) => (
-                    <div key={idx}>
-                      {items.find((i) => i.id === it.itemId)?.name || it.itemId} × {it.quantity}
-                    </div>
-                  ))}
+                  {items.find((i) => i.id === r.itemId)?.name || r.itemId} × {r.quantity}
                 </td>
                 <td className="px-4 py-3">{r.notes || "-"}</td>
                 <td className="px-4 py-3">
@@ -256,7 +226,7 @@ export default function RequestList() {
                   </span>
                 </td>
                 <td className="px-4 py-3">{r.approver || "-"}</td>
-                <td className="px-4 py-3">{new Date(r.date).toLocaleString()}</td>
+                <td className="px-4 py-3">{new Date(r.createdAt).toLocaleString()}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2 flex-wrap">
                     {r.status === "pending" && (
