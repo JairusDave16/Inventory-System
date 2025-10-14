@@ -156,16 +156,16 @@ export default function RequestList() {
   };
 
   return (
-    <div className="p-8 min-h-screen bg-gray-50">
+    <div className="p-8 min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
           <FileText className="w-7 h-7 text-blue-600" /> Requests
         </h1>
         <button
           onClick={() => fetchRequests()}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           Refresh
@@ -173,24 +173,24 @@ export default function RequestList() {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white p-4 rounded-2xl shadow-md mb-6 border border-gray-100">
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md mb-6 border border-gray-100 dark:border-gray-700">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
             <input
               type="text"
               placeholder="Search by ID, User ID, or Item name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
             />
           </div>
           <div className="flex items-center gap-2">
-            <Filter className="text-gray-400 w-4 h-4" />
+            <Filter className="text-gray-400 dark:text-gray-500 w-4 h-4" />
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+              className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
             >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
@@ -203,8 +203,8 @@ export default function RequestList() {
       </div>
 
       {/* New Request Form */}
-      <div className="bg-white p-6 rounded-2xl shadow-md mb-8 border border-gray-100">
-        <h2 className="text-lg font-semibold mb-4 text-gray-700">Create New Request</h2>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md mb-8 border border-gray-100 dark:border-gray-700">
+        <h2 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-100">Create New Request</h2>
 
         <div className="grid md:grid-cols-2 gap-4 mb-4">
           <input
@@ -212,14 +212,14 @@ export default function RequestList() {
             placeholder="User ID"
             value={newRequest.userId || ""}
             onChange={(e) => setNewRequest({ ...newRequest, userId: Number(e.target.value) })}
-            className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500"
+            className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
           />
           <input
             type="text"
             placeholder="Notes (optional)"
             value={newRequest.notes || ""}
             onChange={(e) => setNewRequest({ ...newRequest, notes: e.target.value })}
-            className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500"
+            className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
           />
         </div>
 
@@ -227,7 +227,7 @@ export default function RequestList() {
           <select
             value={newRequest.itemId || ""}
             onChange={(e) => setNewRequest({ ...newRequest, itemId: Number(e.target.value) })}
-            className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500"
+            className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
           >
             <option value="">Select Item</option>
             {items.map((i) => (
@@ -241,34 +241,34 @@ export default function RequestList() {
             placeholder="Quantity"
             value={newRequest.quantity || ""}
             onChange={(e) => setNewRequest({ ...newRequest, quantity: Number(e.target.value) })}
-            className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500"
+            className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
           />
         </div>
 
         <button
           onClick={handleCreate}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition"
         >
           Submit Request
         </button>
       </div>
 
       {/* Requests Table */}
-      <div className="bg-white rounded-2xl shadow-md border border-gray-100 mb-8 overflow-x-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 mb-8 overflow-x-auto">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
-            <span className="ml-2 text-gray-600">Loading requests...</span>
+            <span className="ml-2 text-gray-600 dark:text-gray-400">Loading requests...</span>
           </div>
         ) : (
           <>
-            <div className="px-4 py-3 border-b border-gray-200">
-              <p className="text-sm text-gray-600">
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Showing {filteredRequests.length} of {requests.length} requests (Page {currentPage} of {totalPages})
               </p>
             </div>
             <table className="w-full text-sm text-left">
-              <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
+              <thead className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 uppercase text-xs">
                 <tr>
                   <th className="px-4 py-3">ID</th>
                   <th className="px-4 py-3">User</th>
@@ -281,55 +281,55 @@ export default function RequestList() {
                   <th className="px-4 py-3">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
                 {filteredRequests.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={9} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                       No requests found matching your criteria.
                     </td>
                   </tr>
                 ) : (
                   filteredRequests.map((r) => (
-                    <tr key={r.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-medium">{r.id}</td>
-                      <td className="px-4 py-3">{r.userId}</td>
-                      <td className="px-4 py-3">
+                    <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{r.id}</td>
+                      <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.userId}</td>
+                      <td className="px-4 py-3 text-gray-900 dark:text-gray-100">
                         {items.find((i) => i.id === r.itemId)?.name || `Item ${r.itemId}`}
                       </td>
-                      <td className="px-4 py-3">{r.quantity}</td>
-                      <td className="px-4 py-3 max-w-xs truncate" title={r.notes || ""}>
+                      <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.quantity}</td>
+                      <td className="px-4 py-3 max-w-xs truncate text-gray-900 dark:text-gray-100" title={r.notes || ""}>
                         {r.notes || "-"}
                       </td>
                       <td className="px-4 py-3">
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
                             r.status === "approved"
-                              ? "bg-green-100 text-green-700"
+                              ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
                               : r.status === "rejected"
-                              ? "bg-red-100 text-red-700"
+                              ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
                               : r.status === "fulfilled"
-                              ? "bg-blue-100 text-blue-700"
-                              : "bg-yellow-100 text-yellow-700"
+                              ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                              : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
                           }`}
                         >
                           {r.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3">{r.approver || "-"}</td>
-                      <td className="px-4 py-3">{new Date(r.createdAt).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{r.approver || "-"}</td>
+                      <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{new Date(r.createdAt).toLocaleString()}</td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2 flex-wrap">
                           {r.status === "pending" && (
                             <>
                               <button
                                 onClick={() => handleApprove(r.id, true)}
-                                className="px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition text-xs"
+                                className="px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 dark:bg-green-900 dark:text-green-300 dark:hover:bg-green-800 transition text-xs"
                               >
                                 <Check className="w-3 h-3 inline mr-1" /> Approve
                               </button>
                               <button
                                 onClick={() => handleApprove(r.id, false)}
-                                className="px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition text-xs"
+                                className="px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 dark:bg-red-900 dark:text-red-300 dark:hover:bg-red-800 transition text-xs"
                               >
                                 <X className="w-3 h-3 inline mr-1" /> Reject
                               </button>
@@ -339,14 +339,14 @@ export default function RequestList() {
                           {r.status === "approved" && (
                             <button
                               onClick={() => handleFulfill(r.id)}
-                              className="px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition text-xs"
+                              className="px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800 transition text-xs"
                             >
                               <Package className="w-3 h-3 inline mr-1" /> Fulfill
                             </button>
                           )}
                           <button
                             onClick={() => fetchLogs(r.id)}
-                            className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition text-xs"
+                            className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition text-xs"
                           >
                             Logs
                           </button>
@@ -367,17 +367,17 @@ export default function RequestList() {
           <button
             onClick={() => fetchRequests(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50"
+            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
           >
             Previous
           </button>
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-600 dark:text-gray-400">
             Page {currentPage} of {totalPages}
           </span>
           <button
             onClick={() => fetchRequests(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50"
+            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
           >
             Next
           </button>
@@ -386,24 +386,24 @@ export default function RequestList() {
 
       {/* Logs Section */}
       {showLogsFor && (
-        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-700">
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-100">
               Logs for Request #{showLogsFor}
             </h3>
             <button
               onClick={() => setShowLogsFor(null)}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
           <div className="overflow-x-auto">
             {logs.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No logs found for this request.</p>
+              <p className="text-gray-500 dark:text-gray-400 text-center py-4">No logs found for this request.</p>
             ) : (
               <table className="w-full text-sm text-left">
-                <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
+                <thead className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 uppercase text-xs">
                   <tr>
                     <th className="px-4 py-2">ID</th>
                     <th className="px-4 py-2">Action</th>
@@ -412,14 +412,14 @@ export default function RequestList() {
                     <th className="px-4 py-2">Date</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
                   {logs.map((log) => (
-                    <tr key={log.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-2">{log.id}</td>
-                      <td className="px-4 py-2">{log.action}</td>
-                      <td className="px-4 py-2">{log.user}</td>
-                      <td className="px-4 py-2">{log.notes || "-"}</td>
-                      <td className="px-4 py-2">{new Date(log.date).toLocaleString()}</td>
+                    <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{log.id}</td>
+                      <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{log.action}</td>
+                      <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{log.user}</td>
+                      <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{log.notes || "-"}</td>
+                      <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{new Date(log.date).toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>

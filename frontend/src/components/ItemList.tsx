@@ -143,14 +143,14 @@ export default function ItemList() {
 
   return (
     <Layout>
-      <div className="p-6 max-w-6xl mx-auto">
+      <div className="p-4 md:p-6 max-w-full md:max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
             <Package className="w-8 h-8" />
             Inventory Management
           </h2>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {selectedItems.length > 0 && (
               <button
                 onClick={handleBulkDelete}
@@ -172,11 +172,11 @@ export default function ItemList() {
 
         {/* Filter */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Filter by Category:
           </label>
           <select
-            className="border border-gray-300 rounded-lg px-3 py-2 w-60 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full md:w-60 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
           >
@@ -190,9 +190,9 @@ export default function ItemList() {
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto bg-white rounded-xl shadow-md">
+        <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-xl shadow-md">
           <table className="w-full border-collapse">
-            <thead className="bg-gray-100 text-gray-700 text-sm uppercase">
+            <thead className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm uppercase">
               <tr>
                 <th className="px-4 py-3 text-left">
                   <input
@@ -216,11 +216,11 @@ export default function ItemList() {
                 <th className="px-4 py-3 text-left">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
               {items
                 .filter((it) => !filterCategory || it.category === filterCategory)
                 .map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50 transition">
+                  <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                     <td className="px-4 py-3">
                       <input
                         type="checkbox"
@@ -235,19 +235,19 @@ export default function ItemList() {
                       />
                     </td>
                     <td className="px-4 py-3">{item.id}</td>
-                    <td className="px-4 py-3 font-medium text-gray-800">{item.name}</td>
+                    <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-200">{item.name}</td>
                     <td className="px-4 py-3">
-                      <span className="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded">
+                      <span className="px-2 py-1 text-xs font-semibold bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
                         {item.category}
                       </span>
                     </td>
                     <td className="px-4 py-3">{item.stock}</td>
-                    <td className="px-4 py-3 text-gray-600">{item.series}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{item.series}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2 flex-wrap">
                         {/* Normal transactions */}
                         <button
-                          className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-md hover:bg-green-200 transition flex items-center gap-1"
+                          className="text-sm bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-3 py-1 rounded-md hover:bg-green-200 dark:hover:bg-green-800 transition flex items-center gap-1"
                           onClick={() => {
                             setTransactionItem(item);
                             setTransactionType("deposit");
@@ -258,7 +258,7 @@ export default function ItemList() {
                           Deposit
                         </button>
                         <button
-                          className="text-sm bg-yellow-100 text-yellow-700 px-3 py-1 rounded-md hover:bg-yellow-200 transition flex items-center gap-1"
+                          className="text-sm bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 px-3 py-1 rounded-md hover:bg-yellow-200 dark:hover:bg-yellow-800 transition flex items-center gap-1"
                           onClick={() => {
                             setTransactionItem(item);
                             setTransactionType("withdraw");
@@ -271,7 +271,7 @@ export default function ItemList() {
 
                         {/* Series transactions */}
                         <button
-                          className="text-sm bg-green-200 text-green-800 px-3 py-1 rounded-md hover:bg-green-300 transition flex items-center gap-1"
+                          className="text-sm bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 px-3 py-1 rounded-md hover:bg-green-300 dark:hover:bg-green-700 transition flex items-center gap-1"
                           onClick={() => {
                             setSeriesModalItem(item);
                             setSeriesType("deposit");
@@ -281,7 +281,7 @@ export default function ItemList() {
                           Series
                         </button>
                         <button
-                          className="text-sm bg-yellow-200 text-yellow-800 px-3 py-1 rounded-md hover:bg-yellow-300 transition flex items-center gap-1"
+                          className="text-sm bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 px-3 py-1 rounded-md hover:bg-yellow-300 dark:hover:bg-yellow-700 transition flex items-center gap-1"
                           onClick={() => {
                             setSeriesModalItem(item);
                             setSeriesType("withdraw");
@@ -292,14 +292,14 @@ export default function ItemList() {
                         </button>
 
                         <button
-                          className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-md hover:bg-blue-200 transition flex items-center gap-1"
+                          className="text-sm bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800 transition flex items-center gap-1"
                           onClick={() => fetchLogs(item)}
                         >
                           <BarChart3 className="w-3 h-3" />
                           Logs
                         </button>
                         <button
-                          className="text-sm bg-red-100 text-red-700 px-3 py-1 rounded-md hover:bg-red-200 transition flex items-center gap-1"
+                          className="text-sm bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 px-3 py-1 rounded-md hover:bg-red-200 dark:hover:bg-red-800 transition flex items-center gap-1"
                           onClick={() => handleDelete(item.id)}
                         >
                           <Trash2 className="w-3 h-3" />
@@ -315,15 +315,15 @@ export default function ItemList() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-6">
-            <div className="text-sm text-gray-700">
+          <div className="flex flex-col md:flex-row items-center justify-between mt-6 gap-4">
+            <div className="text-sm text-gray-700 dark:text-gray-300">
               Showing page {currentPage} of {totalPages}
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => fetchItems(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                className="px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Previous
@@ -331,7 +331,7 @@ export default function ItemList() {
               <button
                 onClick={() => fetchItems(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                className="px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
               >
                 Next
                 <ChevronRight className="w-4 h-4" />
