@@ -2,10 +2,10 @@
 import api from "./axios";
 import { Request } from "../types/request";
 
-// Get all requests
-export const getRequests = async (): Promise<Request[]> => {
-  const res = await api.get("/requests");
-  return res.data;
+// Get all requests with pagination
+export const getRequests = async (page: number = 1, limit: number = 10): Promise<{ requests: Request[], pagination: any }> => {
+  const res = await api.get(`/requests?page=${page}&limit=${limit}`);
+  return res.data.data;
 };
 
 // Get single request

@@ -10,11 +10,36 @@ const sendResponse = (res: Response, status: number, success: boolean, message: 
 // 📦 Item CRUD
 // -------------------
 
-// GET all items
-export const getAllItems = async (_req: Request, res: Response) => {
+// GET all items with pagination
+export const getAllItems = async (req: Request, res: Response) => {
   try {
-    const items = await prisma.item.findMany({ where: { deletedAt: null } });
-    sendResponse(res, 200, true, "Items retrieved successfully", items);
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const offset = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      prisma.item.findMany({
+        where: { deletedAt: null },
+        skip: offset,
+        take: limit,
+        orderBy: { id: 'asc' }
+      }),
+      prisma.item.count({ where: { deletedAt: null } })
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    sendResponse(res, 200, true, "Items retrieved successfully", {
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    });
   } catch (err) {
     sendResponse(res, 500, false, "Failed to retrieve items", err);
   }
@@ -178,23 +203,11 @@ export const updateItemController = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteItemController = async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  if (isNaN(id)) return sendResponse(res, 400, false, "Invalid item ID");
-
-  try {
-    await prisma.item.update({ where: { id }, data: { deletedAt: new Date() } });
-    sendResponse(res, 200, true, "Item soft-deleted successfully");
-  } catch (err) {
-    sendResponse(res, 500, false, "Failed to delete item", err);
-  }
-};
-
 // Bulk delete items
 export const bulkDeleteItemsController = async (req: Request, res: Response) => {
   const { ids } = req.body;
   if (!Array.isArray(ids) || ids.length === 0) {
-    return sendResponse(res, 400, false, "IDs array is required and cannot be empty");
+    return sendResponse(res, 400, false, "Invalid or empty item IDs array");
   }
 
   const invalidIds = ids.filter(id => isNaN(Number(id)));
@@ -211,5 +224,17 @@ export const bulkDeleteItemsController = async (req: Request, res: Response) => 
     sendResponse(res, 200, true, `${numericIds.length} items soft-deleted successfully`);
   } catch (err) {
     sendResponse(res, 500, false, "Failed to bulk delete items", err);
+  }
+};
+
+export const deleteItemController = async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  if (isNaN(id)) return sendResponse(res, 400, false, "Invalid item ID");
+
+  try {
+    await prisma.item.update({ where: { id }, data: { deletedAt: new Date() } });
+    sendResponse(res, 200, true, "Item soft-deleted successfully");
+  } catch (err) {
+    sendResponse(res, 500, false, "Failed to delete item", err);
   }
 };

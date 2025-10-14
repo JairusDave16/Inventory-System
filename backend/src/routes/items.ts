@@ -1,113 +1,43 @@
-// backend/src/routes/itemRoutes.ts
-import { Router } from "express";
-import { Item } from "../types/Item";
-import { Log } from "../types/Log";
+import express from "express";
+import {
+  getAllItems,
+  getItemById,
+  createItem,
+  depositItemController,
+  withdrawItemController,
+  updateItemController,
+  deleteItemController,
+  bulkDeleteItemsController,
+} from "../controllers/itemController";
+import { logController } from "../controllers/logController";
 
-const router = Router();
+const router = express.Router();
 
-// In-memory storage
-let items: Item[] = [];
-let logs: Log[] = [];
-let itemIdCounter = 1; // auto-increment for items
-let logIdCounter = 1;  // auto-increment for logs
+// GET /api/items - Get all items
+router.get("/", getAllItems);
 
-// Utility: add a log entry
-function addLog(
-  itemId: number,
-  type: "deposit" | "withdraw" | "update",
-  stock: number,
-  notes?: string
-) {
-  logs.push({
-    id: logIdCounter++, // number
-    itemId,             // number
-    type,
-    stock,
-    notes: notes ?? "",
-    date: new Date().toISOString(),
-  });
-}
+// GET /api/items/:id - Get item by ID
+router.get("/:id", getItemById);
 
-// ✅ Get logs for an item
-router.get("/:id/logs", (req, res) => {
-  const id = Number(req.params.id);
-  if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
+// GET /api/items/:id/logs - Get logs for an item
+router.get("/:id/logs", logController.getLogsByItem);
 
-  const itemLogs = logs.filter((log) => log.itemId === id);
-  res.json(itemLogs);
-});
+// POST /api/items - Create new item
+router.post("/", createItem);
 
-// Get all items
-router.get("/", (req, res) => {
-  res.json(items);
-});
+// PUT /api/items/:id/deposit - Deposit stock
+router.put("/:id/deposit", depositItemController);
 
-// Add new item
-router.post("/", (req, res) => {
-  const newItem: Item = {
-    id: itemIdCounter++, // number
-    name: req.body.name,
-    stock: req.body.stock || 0,
-    unit: req.body.unit,
-    category: req.body.category,
-    description: req.body.description || "",
-  };
+// PUT /api/items/:id/withdraw - Withdraw stock
+router.put("/:id/withdraw", withdrawItemController);
 
-  items.push(newItem);
+// PUT /api/items/:id - Update item stock
+router.put("/:id", updateItemController);
 
-  // Log initial stock
-  addLog(newItem.id, "deposit", newItem.stock, "Initial stock");
+// DELETE /api/items/bulk - Bulk delete items
+router.delete("/bulk", bulkDeleteItemsController);
 
-  res.status(201).json(newItem);
-});
-
-// Adjust stock: deposit or withdraw
-router.post("/:id/adjust", (req, res) => {
-  const id = Number(req.params.id);
-  if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-
-  const { type, quantity, notes } = req.body;
-  const item = items.find((i) => i.id === id);
-  if (!item) return res.status(404).json({ error: "Item not found" });
-
-  const qty = Number(quantity);
-  if (isNaN(qty) || qty <= 0) {
-    return res.status(400).json({ error: "Invalid quantity" });
-  }
-
-  if (type === "deposit") {
-    item.stock += qty;
-  } else if (type === "withdraw") {
-    if (item.stock < qty) return res.status(400).json({ error: "Insufficient stock" });
-    item.stock -= qty;
-  } else {
-    return res.status(400).json({ error: "Invalid type" });
-  }
-
-  addLog(item.id, type, qty, notes);
-
-  res.json(item);
-});
-
-// Update item
-router.put("/:id", (req, res) => {
-  const id = Number(req.params.id);
-  if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-
-  const index = items.findIndex((item) => item.id === id);
-  if (index === -1) return res.status(404).json({ error: "Item not found" });
-
-  items[index] = { ...items[index], ...req.body };
-  res.json(items[index]);
-});
-
-// Delete item
-router.delete("/:id", (req, res) => {
-  const id = Number(req.params.id);
-  if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
-
-  items = items.filter((item) => item.id !== id);
-  res.status(204).send();
-});
+// DELETE /api/items/:id - Delete item
+router.delete("/:id", deleteItemController);
 
 export default router;

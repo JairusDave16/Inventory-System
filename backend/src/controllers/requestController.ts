@@ -158,17 +158,40 @@ export const fulfillRequestController = async (req: Request, res: Response) => {
 };
 
 // -----------------------------
-// Get all requests
+// Get all requests with pagination
 // -----------------------------
-export const getRequestsController = async (_req: Request, res: Response) => {
+export const getRequestsController = async (req: Request, res: Response) => {
   try {
-    const requests = await prisma.request.findMany({
-      include: {
-        user: true,
-        item: true,
-      },
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const offset = (page - 1) * limit;
+
+    const [requests, total] = await Promise.all([
+      prisma.request.findMany({
+        skip: offset,
+        take: limit,
+        include: {
+          user: true,
+          item: true,
+        },
+        orderBy: { id: 'asc' }
+      }),
+      prisma.request.count()
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    sendResponse(res, 200, true, "Requests retrieved successfully", {
+      requests,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
     });
-    sendResponse(res, 200, true, "Requests retrieved successfully", requests);
   } catch (error) {
     console.error("❌ getRequestsController error:", error);
     sendResponse(res, 500, false, "Failed to fetch requests", error);
@@ -187,7 +210,7 @@ export const getRequestLogsController = async (req: Request, res: Response) => {
       orderBy: { date: "asc" },
     });
 
-    if (!logs.length) return sendResponse(res, 404, false, "No logs found for this request");
+    if (!logs.length) return sendResponse(res, 200, true, "No logs found for this request", []);
 
     sendResponse(res, 200, true, "Logs retrieved successfully", logs);
   } catch (error) {

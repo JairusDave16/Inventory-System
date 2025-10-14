@@ -1,16 +1,16 @@
 import api from "./axios";
 import { Item, Log } from "../types";
 
-// 🧩 Get all items
-export const getItems = async (): Promise<Item[]> => {
-  const res = await api.get("/items");
+// 🧩 Get all items with pagination
+export const getItems = async (page: number = 1, limit: number = 10): Promise<{ items: Item[], pagination: any }> => {
+  const res = await api.get(`/items?page=${page}&limit=${limit}`);
   return res.data.data; // ✅ unwrap .data from backend
 };
 
 // 🧾 Get logs for one item
 export const getItemLogs = async (itemId: string): Promise<Log[]> => {
-  const res = await api.get(`/items/${itemId}/logs`);
-  return res.data.data || res.data; // ✅ fallback if backend doesn’t wrap logs
+  const res = await api.get(`/logs/${itemId}`);
+  return res.data; // ✅ logs endpoint returns data directly
 };
 
 // ➕ Create new item

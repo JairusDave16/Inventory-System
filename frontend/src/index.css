@@ -2,3 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Dark mode styles */
+.dark {
+  /* Table styles */
+  .dark table {
+    @apply bg-gray-800;
+  }
+  .dark thead {
+    @apply bg-gray-700;
+  }
+  .dark tbody tr {
+    @apply hover:bg-gray-700;
+  }
+  .dark tbody tr:nth-child(even) {
+    @apply bg-gray-800;
+  }
+  .dark tbody tr:nth-child(odd) {
+    @apply bg-gray-750;
+  }
+
+  /* Form styles */
+  .dark input, .dark select, .dark textarea {
+    @apply bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400;
+  }
+  .dark input:focus, .dark select:focus, .dark textarea:focus {
+    @apply border-blue-500 ring-blue-500;
+  }
+
+  /* Button styles */
+  .dark button {
+    @apply text-gray-100;
+  }
+  .dark button:hover {
+    @apply bg-opacity-80;
+  }
+
+  /* Modal styles */
+  .dark .modal-overlay {
+    @apply bg-black bg-opacity-75;
+  }
+  .dark .modal-content {
+    @apply bg-gray-800 text-gray-100;
+  }
+
+  /* Card styles */
+  .dark .card {
+    @apply bg-gray-800 border-gray-700;
+  }
+
+  /* Navigation */
+  .dark nav {
+    @apply bg-gray-800;
+  }
+  .dark nav a {
+    @apply text-gray-300 hover:text-white;
+  }
+
+  /* Text colors */
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    @apply text-gray-100;
+  }
+  .dark p, .dark span, .dark div {
+    @apply text-gray-300;
+  }
+
+  /* Border colors */
+  .dark .border {
+    @apply border-gray-700;
+  }
+
+  /* Background colors */
+  .dark .bg-white {
+    @apply bg-gray-800;
+  }
+  .dark .bg-gray-50 {
+    @apply bg-gray-900;
+  }
+  .dark .bg-gray-100 {
+    @apply bg-gray-700;
+  }
+}
+

@@ -23,6 +23,12 @@ app.use(express.json());
 // 🏠 Base route
 app.get("/", (_req, res) => res.send("Inventory System API 🚀"));
 
+// Welcome endpoint with logging
+app.get("/welcome", (req, res) => {
+  console.log(`Request: ${req.method} ${req.path}`);
+  res.json({ message: "Welcome to the Inventory System API!" });
+});
+
 // 🔹 Auth routes (public)
 app.use("/api/auth", authRoutes);
 

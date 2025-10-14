@@ -7,7 +7,7 @@ import { TransactionModal } from "./TransactionModal";
 import { AddItemModal, ItemFormState } from "./AddItemModal";
 import { SeriesTransactionModal } from "./SeriesTransactionModal";
 import { getItems, getItemLogs, createItem, adjustStock, deleteItem, bulkDeleteItems } from "../api/items";
-import { Search, Plus, Trash2, Package, TrendingUp, TrendingDown, BarChart3, Filter } from "lucide-react";
+import { Search, Plus, Trash2, Package, TrendingUp, TrendingDown, BarChart3, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from 'react-hot-toast';
 
 export default function ItemList() {
@@ -20,6 +20,9 @@ export default function ItemList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pagination, setPagination] = useState<any>(null);
 
   const [transactionItem, setTransactionItem] = useState<Item | null>(null);
   const [transactionType, setTransactionType] = useState<"deposit" | "withdraw">("deposit");
@@ -43,19 +46,22 @@ export default function ItemList() {
     fetchItems();
   }, []);
 
-  const fetchItems = useCallback(async () => {
+  const fetchItems = useCallback(async (page: number = currentPage) => {
     setIsLoading(true);
     setError(null);
     try {
-      const fetchedItems = await getItems();
-      setItems(fetchedItems);
+      const response = await getItems(page, 10);
+      setItems(response.items);
+      setPagination(response.pagination);
+      setTotalPages(response.pagination.totalPages);
+      setCurrentPage(page);
     } catch (err: any) {
       setError(err.message || "Failed to fetch items");
       setItems([]);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [currentPage]);
 
   const fetchLogs = useCallback(async (item: Item) => {
     setLogItem(item);
@@ -306,6 +312,33 @@ export default function ItemList() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-6">
+            <div className="text-sm text-gray-700">
+              Showing page {currentPage} of {totalPages}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => fetchItems(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Previous
+              </button>
+              <button
+                onClick={() => fetchItems(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              >
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Modals */}
         <AddItemModal

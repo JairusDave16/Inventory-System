@@ -1,44 +1,45 @@
-# User Experience Enhancements TODO
+# System-Wide Improvements TODO
 
-## 1. Backend Changes
-- [x] Add bulkDeleteItems endpoint in backend/src/controllers/itemController.ts
-- [x] Add bulkApproveRequests and bulkRejectRequests endpoints in backend/src/controllers/requestController.ts
-- [x] Update backend/src/routes/items.ts to include bulk delete route
-- [x] Update backend/src/routes/requestRoutes.ts to include bulk approve/reject routes
+## 1. Install Additional Packages
+- [x] Install socket.io, socket.io-client, redis, express-rate-limit, papaparse
 
-## 2. Frontend API Updates
-- [x] Update frontend/src/api/items.ts to add bulkDeleteItems function
-- [x] Update frontend/src/api/requests.ts to add bulkApproveRequests and bulkRejectRequests functions
+## 2. Theme Management
+- [x] Create theme context and provider for dark mode with localStorage persistence
+- [x] Add dark mode styles to CSS
+- [x] Add theme toggle to Navbar
 
-## 3. Search and Filtering
-- [ ] Add global search input to ItemList.tsx (search by name/category) with debouncing
-- [ ] Add global search input to RequestList.tsx (search by item name/user/status) with debouncing
-- [ ] Implement search logic in both components
+## 3. Responsive Design
+- [ ] Implement responsive breakpoints in components (Layout, ItemList, RequestList)
 
-## 4. Bulk Operations
-- [ ] Add checkboxes to ItemList.tsx for multi-select items
-- [ ] Add checkboxes to RequestList.tsx for multi-select requests
-- [ ] Add bulk delete button for selected items in ItemList.tsx
-- [ ] Add bulk approve/reject buttons for selected requests in RequestList.tsx
-- [ ] Implement bulk operation handlers with confirmation dialogs
+## 4. Notifications Enhancement
+- [ ] Enhance toast notifications integration throughout the app
 
-## 5. Responsive Design
-- [ ] Update Layout.tsx to collapsible sidebar with hamburger menu for mobile
-- [ ] Make tables scrollable on small screens in ItemList.tsx and RequestList.tsx
-- [ ] Adjust Navbar.tsx for mobile responsiveness
+## 5. Pagination Implementation
+- [x] Add pagination to ItemList (backend: page/limit params, frontend: pagination UI)
+- [x] Add pagination to RequestList (backend: page/limit params, frontend: pagination UI)
 
-## 6. Notifications
-- [x] Install react-hot-toast in frontend
-- [ ] Add toast notifications for successful operations (create, delete, approve, etc.)
-- [ ] Add low stock alerts in ItemList.tsx
+## 6. Bulk Operations
+- [ ] Implement bulk approve/reject for RequestList with confirmation dialogs
+- [ ] Add bulk operations to ItemList if needed
 
-## 7. Optional: Dark Mode Toggle
-- [ ] Add dark mode toggle to Navbar.tsx
-- [ ] Update index.css with dark mode classes
+## 7. CSV Export
+- [ ] Add CSV export buttons to ItemList table
+- [ ] Add CSV export buttons to RequestList table
 
-## Testing and Followup
-- [ ] Test bulk operations functionality
-- [ ] Test search and filtering
-- [ ] Test responsive layout on different screen sizes
-- [ ] Test notifications
-- [ ] Verify backend endpoints work correctly
+## 8. WebSocket Setup
+- [ ] Set up WebSocket server in backend
+- [ ] Set up WebSocket client in frontend for real-time updates
+
+## 9. Redis Caching
+- [ ] Add Redis caching layer for performance
+
+## 10. Database Indexes
+- [ ] Implement database indexes in Prisma schema
+
+## 11. API Rate Limiting
+- [ ] Add API rate limiting middleware
+
+## 12. Testing
+- [ ] Test features across different screen sizes
+- [ ] Verify real-time updates work correctly
+- [ ] Performance test with caching enabled
